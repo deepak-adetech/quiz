@@ -419,3 +419,14 @@ export async function downloadPdf(results) {
     : 'report';
   doc.save(`operational-archetype-${name}.pdf`);
 }
+
+/**
+ * Generate PDF and return as base64 string (for email attachments)
+ */
+export async function generatePdfBase64(results) {
+  const doc = await generatePdf(results);
+  // jsPDF datauristring format: "data:application/pdf;filename=...;base64,XXXXX"
+  const dataUri = doc.output('datauristring');
+  const commaIdx = dataUri.indexOf(',');
+  return commaIdx > -1 ? dataUri.slice(commaIdx + 1) : dataUri;
+}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { generateFallback } from '../data/fallback';
-import { downloadPdf } from '../utils/generatePdf';
+import { downloadPdf, generatePdfBase64 } from '../utils/generatePdf';
 
 function loadResults() {
   const stored = sessionStorage.getItem('quizResults');
@@ -17,7 +17,10 @@ export default function ResultsPage() {
   const navigate = useNavigate();
   const results = useMemo(() => loadResults(), []);
   const barsAnimated = useRef(false);
+  const emailSentRef = useRef(false);
   const [pdfReady, setPdfReady] = useState(false);
+  // email status: 'idle' | 'sending' | 'sent' | 'failed' | 'no-email'
+  const [emailStatus, setEmailStatus] = useState('idle');
 
   const handleDownloadPdf = async () => {
     if (!results) return;
@@ -28,6 +31,38 @@ export default function ResultsPage() {
   useEffect(() => {
     if (!results) navigate('/');
   }, [results, navigate]);
+
+  // Auto-send email with PDF attachment once on mount
+  useEffect(() => {
+    if (!results || emailSentRef.current) return;
+    if (!results.user?.email) return;
+    emailSentRef.current = true;
+
+    (async () => {
+      setEmailStatus('sending');
+      try {
+        const pdfBase64 = await generatePdfBase64(results);
+        const res = await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: results.user.email,
+            name: results.user.name,
+            pdfBase64,
+            archetypeName: results.archetype.name,
+            archetypeCode: results.code,
+            tagline: results.archetype.tagline,
+            userInfo: results.user,
+          }),
+        });
+        const data = await res.json();
+        setEmailStatus(data.sent ? 'sent' : 'failed');
+      } catch (err) {
+        console.error('Email send failed:', err);
+        setEmailStatus('failed');
+      }
+    })();
+  }, [results]);
 
   // Animate bars on mount
   useEffect(() => {
@@ -215,12 +250,33 @@ export default function ResultsPage() {
           </div>
         </section>
 
-        {/* ── PDF Download ── */}
+        {/* ── PDF Download + Email Status ── */}
         <section className="result-section">
           <div className="pdf-download-card">
             <div className="pdf-icon">{'\uD83D\uDCC4'}</div>
-            <h2>Download Your Full Report</h2>
-            <p>Get a beautifully formatted PDF with all your results, insights, and action plan.</p>
+            <h2>Your Full Report is Ready</h2>
+            <p>A beautifully formatted PDF with all your results, insights, and action plan.</p>
+
+            {/* Email status banner */}
+            {emailStatus === 'sending' && (
+              <div className="email-status status-sending">
+                <span className="status-spinner" />
+                <span>Sending a copy to <strong>{results.user?.email}</strong>...</span>
+              </div>
+            )}
+            {emailStatus === 'sent' && (
+              <div className="email-status status-sent">
+                <span>{'\u2709\uFE0F'}</span>
+                <span>We've sent your PDF report to <strong>{results.user?.email}</strong>. Check your inbox!</span>
+              </div>
+            )}
+            {emailStatus === 'failed' && (
+              <div className="email-status status-failed">
+                <span>{'\u26A0\uFE0F'}</span>
+                <span>Couldn't email your report right now. Please use the download button below.</span>
+              </div>
+            )}
+
             <button className="btn-primary btn-large" onClick={handleDownloadPdf}>
               {pdfReady ? '\u2713 Downloaded!' : '\u{1F4E5} Download PDF Report'}
             </button>

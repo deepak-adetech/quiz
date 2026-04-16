@@ -979,6 +979,43 @@ select.form-input option[value=""] {
   padding: 16px 40px;
 }
 
+/* Email status banner */
+.email-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 100px;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  max-width: 100%;
+  line-height: 1.4;
+}
+.email-status.status-sending {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+.email-status.status-sent {
+  background: var(--accent-light);
+  color: #065F46;
+}
+.email-status.status-failed {
+  background: var(--danger-light);
+  color: #991B1B;
+}
+
+.status-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
 /* ── CTA ── */
 .cta-card {
   background: var(--card);
