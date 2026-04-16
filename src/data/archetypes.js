@@ -1,6 +1,12 @@
 /**
  * 16 Operational Archetypes
  * Code: [M|A][C|F][S|I][P|R]
+ *
+ * Each archetype includes rich metadata for the library/card views:
+ * - shortDescription: a 1-2 sentence snapshot
+ * - traits: 3 keywords that define this archetype
+ * - category: Operational maturity category (used for filtering)
+ * - theme: CSS color theme key — 'cream', 'sage', 'coral', 'sky', 'dusk', 'sand', 'rose', 'mint'
  */
 
 const archetypes = {
@@ -10,6 +16,10 @@ const archetypes = {
     animal: 'Owl',
     animalEmoji: '\u{1F989}',
     tagline: "We know exactly what's broken. We just haven't fixed it yet.",
+    shortDescription: 'Wise and observant. Leaders see every problem clearly from above, but translating strategy into coordinated action across teams is the ongoing challenge.',
+    traits: ['Strategic', 'Data-Rich', 'Silo-Bound'],
+    category: 'Strategic Planners',
+    theme: 'sage',
   },
   MCSR: {
     name: 'The Watchtower',
@@ -17,6 +27,10 @@ const archetypes = {
     animal: 'Hawk',
     animalEmoji: '\u{1F985}',
     tagline: 'We have the data, but fires keep pulling us off course.',
+    shortDescription: 'Sharp-eyed and informed, yet constantly pulled into emergencies. The dashboards exist — putting insights into action before the next crisis is the struggle.',
+    traits: ['Vigilant', 'Fire-Fighting', 'Data-Rich'],
+    category: 'Reactive Operators',
+    theme: 'coral',
   },
   MCIP: {
     name: 'The Conductor',
@@ -24,6 +38,10 @@ const archetypes = {
     animal: 'Elephant',
     animalEmoji: '\u{1F418}',
     tagline: 'Everyone knows the plan. Now we just need to stop doing it all by hand.',
+    shortDescription: 'Harmonious and in sync. Teams collaborate well with shared data and clear strategy — the next step is trading manual effort for systems that scale.',
+    traits: ['Coordinated', 'Strategic', 'Manual-Heavy'],
+    category: 'Aligned Teams',
+    theme: 'cream',
   },
   MCIR: {
     name: 'The Juggler',
@@ -31,6 +49,10 @@ const archetypes = {
     animal: 'Octopus',
     animalEmoji: '\u{1F419}',
     tagline: 'Great teamwork, good data — but everything still feels like a scramble.',
+    shortDescription: 'Many arms, many tasks, no dropped balls — most days. Connected and informed, but the constant juggling burns out even the most capable teams.',
+    traits: ['Collaborative', 'Multi-Tasking', 'Overwhelmed'],
+    category: 'Reactive Operators',
+    theme: 'dusk',
   },
   MFSP: {
     name: 'The Island Chain',
@@ -38,6 +60,10 @@ const archetypes = {
     animal: 'Turtle',
     animalEmoji: '\u{1F422}',
     tagline: 'Smart teams working hard in isolation with their own versions of the truth.',
+    shortDescription: 'Patient and methodical, each team its own island. Good work happens everywhere, but the lack of shared data and connection slows the whole down.',
+    traits: ['Steady', 'Isolated', 'Fragmented'],
+    category: 'Strategic Planners',
+    theme: 'sky',
   },
   MFSR: {
     name: 'The Survivor',
@@ -45,6 +71,10 @@ const archetypes = {
     animal: 'Chameleon',
     animalEmoji: '\u{1F98E}',
     tagline: 'Every day is an adventure — and not in a good way.',
+    shortDescription: 'Adaptable out of necessity. Things get done through heroic effort, but the lack of systems, data, and planning makes each week unpredictable.',
+    traits: ['Adaptive', 'Chaotic', 'Resilient'],
+    category: 'Survival Mode',
+    theme: 'rose',
   },
   MFIP: {
     name: 'The Village',
@@ -52,6 +82,10 @@ const archetypes = {
     animal: 'Bee',
     animalEmoji: '\u{1F41D}',
     tagline: "People talk and plan well, but the tools and data can't keep up.",
+    shortDescription: 'Busy, buzzing, and community-minded. Communication and collaboration shine, but fragmented data and manual handoffs cap the hive\'s output.',
+    traits: ['Collaborative', 'Strategic', 'Data-Poor'],
+    category: 'Aligned Teams',
+    theme: 'mint',
   },
   MFIR: {
     name: 'The Campfire',
@@ -59,6 +93,10 @@ const archetypes = {
     animal: 'Ant',
     animalEmoji: '\u{1F41C}',
     tagline: 'Strong culture, great people — held together by grit, not systems.',
+    shortDescription: 'Tight-knit, hard-working, and always pitching in. The team carries the load personally — but the reliance on heroes is a ceiling.',
+    traits: ['Team-First', 'Scrappy', 'Unscalable'],
+    category: 'Survival Mode',
+    theme: 'sand',
   },
   ACSP: {
     name: 'The Engine',
@@ -66,6 +104,10 @@ const archetypes = {
     animal: 'Lion',
     animalEmoji: '\u{1F981}',
     tagline: 'A powerful machine — but the departments run on parallel tracks.',
+    shortDescription: 'Strong, proud, and productive. Each department is a well-tuned engine — but without cross-team integration, the pride drives separation more than partnership.',
+    traits: ['Powerful', 'Automated', 'Silo-Bound'],
+    category: 'High-Performers',
+    theme: 'coral',
   },
   ACSR: {
     name: 'The Treadmill',
@@ -73,6 +115,10 @@ const archetypes = {
     animal: 'Cheetah',
     animalEmoji: '\u{1F406}',
     tagline: 'Fast, automated, and organized — but always chasing the next crisis.',
+    shortDescription: 'Blazing speed with solid infrastructure. Yet the pace is exhausting — the team sprints from issue to issue without catching their breath.',
+    traits: ['Fast', 'Efficient', 'Burnout-Prone'],
+    category: 'Reactive Operators',
+    theme: 'dusk',
   },
   ACIP: {
     name: 'The Orchestrator',
@@ -80,6 +126,10 @@ const archetypes = {
     animal: 'Dolphin',
     animalEmoji: '\u{1F42C}',
     tagline: 'The gold standard. Connected, automated, and always one step ahead.',
+    shortDescription: 'Intelligent, social, and endlessly adaptable. Systems, teams, and strategy all move together — a best-in-class operation that others envy.',
+    traits: ['Automated', 'Connected', 'Proactive'],
+    category: 'High-Performers',
+    theme: 'sky',
   },
   ACIR: {
     name: 'The Responder',
@@ -87,6 +137,10 @@ const archetypes = {
     animal: 'Wolf',
     animalEmoji: '\u{1F43A}',
     tagline: 'Connected and capable — but still stuck in reaction mode.',
+    shortDescription: 'The pack works in sync with good tools and data. But energy goes to responding rather than planning — there\'s room to hunt proactively.',
+    traits: ['Connected', 'Responsive', 'Short-Term'],
+    category: 'Reactive Operators',
+    theme: 'rose',
   },
   AFSP: {
     name: 'The Archipelago',
@@ -94,6 +148,10 @@ const archetypes = {
     animal: 'Eagle',
     animalEmoji: '\u{1F985}',
     tagline: 'Pockets of automation excellence, but nothing talks to anything else.',
+    shortDescription: 'High-flying in pockets. Each island runs lean and automated — but they never connect, leaving the bigger picture hard to see.',
+    traits: ['Automated', 'Disconnected', 'Strategic'],
+    category: 'Strategic Planners',
+    theme: 'sand',
   },
   AFSR: {
     name: 'The Pinball Machine',
@@ -101,6 +159,10 @@ const archetypes = {
     animal: 'Fox',
     animalEmoji: '\u{1F98A}',
     tagline: "Things happen fast, but nobody's quite sure where the ball is going.",
+    shortDescription: 'Clever and quick, but unpredictable. Work bounces from tool to tool at speed — thrilling energy, but rarely the same trajectory twice.',
+    traits: ['Agile', 'Unpredictable', 'Reactive'],
+    category: 'Survival Mode',
+    theme: 'mint',
   },
   AFIP: {
     name: 'The Network',
@@ -108,6 +170,10 @@ const archetypes = {
     animal: 'Spider',
     animalEmoji: '\u{1F577}',
     tagline: 'Well-connected and forward-thinking — just needs one source of truth.',
+    shortDescription: 'Weaving strong connections across the org. Strategic, integrated, and automated — but the data threads don\'t all lead back to one center.',
+    traits: ['Connected', 'Strategic', 'Data-Fragmented'],
+    category: 'High-Performers',
+    theme: 'sage',
   },
   AFIR: {
     name: 'The Improviser',
@@ -115,7 +181,23 @@ const archetypes = {
     animal: 'Monkey',
     animalEmoji: '\u{1F412}',
     tagline: 'Innovative and agile, but chaos is always one bad day away.',
+    shortDescription: 'Creative, nimble, and quick on their feet. The trick is channeling that improvisational energy into something sustainable rather than endless ad-lib.',
+    traits: ['Creative', 'Agile', 'Chaotic'],
+    category: 'Survival Mode',
+    theme: 'cream',
   },
 };
+
+/**
+ * Categories used for filtering on the Library page.
+ */
+export const archetypeCategories = [
+  { id: 'all', label: 'All Archetypes' },
+  { id: 'High-Performers', label: 'High-Performers' },
+  { id: 'Strategic Planners', label: 'Strategic Planners' },
+  { id: 'Aligned Teams', label: 'Aligned Teams' },
+  { id: 'Reactive Operators', label: 'Reactive Operators' },
+  { id: 'Survival Mode', label: 'Survival Mode' },
+];
 
 export default archetypes;

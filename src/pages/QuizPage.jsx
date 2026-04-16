@@ -1,62 +1,152 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { questions, categoryLabels } from '../data/questions';
+import { quizSteps, getTotalQuestionCount, getQuestionNumberForStep } from '../data/quizSteps';
 import { calculateArchetype } from '../data/scoring';
+import SingleChoiceStep from '../components/quiz/SingleChoiceStep';
+import DualChoiceStep from '../components/quiz/DualChoiceStep';
+import MultiChoiceStep from '../components/quiz/MultiChoiceStep';
+import ChoicePlusSliderStep from '../components/quiz/ChoicePlusSliderStep';
+import ChoiceDescribedStep from '../components/quiz/ChoiceDescribedStep';
+import MatrixRatingStep from '../components/quiz/MatrixRatingStep';
+import ChoiceIconListStep from '../components/quiz/ChoiceIconListStep';
+import ContactFormStep from '../components/quiz/ContactFormStep';
 
-const TOTAL = questions.length;
+const TOTAL_STEPS = quizSteps.length;
+const TOTAL_QUESTIONS = getTotalQuestionCount();
+
+function isStepComplete(step, answer) {
+  if (!answer) return false;
+  switch (step.type) {
+    case 'single-choice':
+    case 'choice-described':
+    case 'choice-icon-list':
+      return !!answer;
+    case 'dual-choice':
+      return step.questions.every((q) => !!answer[q.id]);
+    case 'multi-choice':
+      return Array.isArray(answer) && answer.length > 0;
+    case 'choice-plus-slider':
+      return !!answer[step.choice.id] && !!answer[step.slider.id];
+    case 'matrix-rating':
+      return step.areas.every((a) => !!answer[a.id]);
+    case 'contact-form':
+      return step.fields
+        .filter((f) => f.required)
+        .every((f) => !!(answer[f.id] && String(answer[f.id]).trim()));
+    default:
+      return false;
+  }
+}
 
 export default function QuizPage() {
   const navigate = useNavigate();
-  const [current, setCurrent] = useState(0);
+  const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [phase, setPhase] = useState('quiz'); // quiz | email | loading
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    company: '',
-    role: '',
-    teamSize: '',
-  });
+  const [phase, setPhase] = useState('quiz'); // quiz | loading
   const [loadingStep, setLoadingStep] = useState(0);
-  const [animating, setAnimating] = useState(false);
 
-  const updateField = (field) => (e) =>
-    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+  const currentStep = quizSteps[stepIndex];
+  const currentAnswer = answers[currentStep?.id];
+  const canProceed = currentStep ? isStepComplete(currentStep, currentAnswer) : false;
+  const isFinalStep = stepIndex === TOTAL_STEPS - 1;
 
-  // ── Select an option ──
-  const selectOption = useCallback((optIndex) => {
-    if (animating) return;
-    setAnswers((prev) => ({ ...prev, [current]: optIndex }));
-    setAnimating(true);
+  const questionNumber = useMemo(() => getQuestionNumberForStep(stepIndex), [stepIndex]);
+  const progress = (questionNumber / TOTAL_QUESTIONS) * 100;
 
-    setTimeout(() => {
-      if (current < TOTAL - 1) {
-        setCurrent((c) => c + 1);
-      } else {
-        setPhase('email');
-      }
-      setAnimating(false);
-    }, 350);
-  }, [current, animating]);
+  // Update a single-value answer
+  const handleSingleAnswer = (value) => {
+    setAnswers((prev) => ({ ...prev, [currentStep.id]: value }));
+  };
 
-  // ── Keyboard shortcuts ──
-  useEffect(() => {
-    function handleKey(e) {
-      if (phase !== 'quiz') return;
-      const map = { a: 0, b: 1, c: 2, d: 3, '1': 0, '2': 1, '3': 2, '4': 3 };
-      if (map[e.key.toLowerCase()] !== undefined) {
-        selectOption(map[e.key.toLowerCase()]);
-      }
-      if (e.key === 'ArrowLeft' && current > 0) {
-        setCurrent((c) => c - 1);
-      }
+  // Update a nested answer (for dual-choice / choice-plus-slider)
+  const handleNestedAnswer = (subKey, value) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [currentStep.id]: { ...(prev[currentStep.id] || {}), [subKey]: value },
+    }));
+  };
+
+  const submitQuiz = async () => {
+    setPhase('loading');
+    const result = calculateArchetype(answers);
+    const contact = answers.contactForm || {};
+    const user = {
+      name: [contact.firstName, contact.lastName].filter(Boolean).join(' '),
+      firstName: contact.firstName || '',
+      lastName: contact.lastName || '',
+      email: contact.email || '',
+      phone: contact.phone || '',
+      company: contact.company || '',
+      role: contact.role || '',
+      website: contact.website || '',
+      expertCall: !!contact.expertCall,
+    };
+
+    try {
+      const res = await fetch('/api/generate-results', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          answers,
+          name: user.name,
+          email: user.email,
+          company: user.company,
+          result,
+        }),
+      });
+      const data = await res.json();
+      sessionStorage.setItem('quizResults', JSON.stringify({
+        ...result,
+        details: data.details,
+        user,
+        profile: answers,
+      }));
+    } catch {
+      sessionStorage.setItem('quizResults', JSON.stringify({
+        ...result,
+        details: null,
+        user,
+        profile: answers,
+      }));
     }
+
+    setTimeout(() => navigate('/results'), 2500);
+  };
+
+  const goNext = () => {
+    if (!canProceed) return;
+    if (isFinalStep) {
+      submitQuiz();
+    } else {
+      setStepIndex((i) => i + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const goBack = () => {
+    setStepIndex((i) => Math.max(0, i - 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Keyboard: Enter to advance, ArrowLeft to go back.
+  // Re-binds when canProceed / phase / step type changes so closures stay fresh.
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (phase !== 'quiz') return;
+      if (e.key === 'Enter' && canProceed && currentStep?.type !== 'contact-form') {
+        e.preventDefault();
+        goNext();
+      }
+      if (e.key === 'ArrowLeft' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        goBack();
+      }
+    };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [phase, current, selectOption]);
 
-  // ── Loading animation ──
+  }, [phase, canProceed, currentStep?.type]);
+
+  // Loading animation
   useEffect(() => {
     if (phase !== 'loading') return;
     const timers = [0, 1, 2, 3].map((i) =>
@@ -65,199 +155,86 @@ export default function QuizPage() {
     return () => timers.forEach(clearTimeout);
   }, [phase]);
 
-  // ── Submit to API ──
-  const submitQuiz = async () => {
-    setPhase('loading');
-
-    const result = calculateArchetype(answers);
-
-    try {
-      const res = await fetch('/api/generate-results', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          answers,
-          name: formData.name,
-          email: formData.email,
-          company: formData.company,
-          result,
-        }),
-      });
-      const data = await res.json();
-
-      sessionStorage.setItem('quizResults', JSON.stringify({
-        ...result,
-        details: data.details,
-        user: formData,
-      }));
-    } catch {
-      sessionStorage.setItem('quizResults', JSON.stringify({
-        ...result,
-        details: null,
-        user: formData,
-      }));
+  // ── Render step body based on type ──
+  const renderStep = () => {
+    switch (currentStep.type) {
+      case 'single-choice':
+        return <SingleChoiceStep step={currentStep} value={currentAnswer} onChange={handleSingleAnswer} />;
+      case 'dual-choice':
+        return <DualChoiceStep step={currentStep} value={currentAnswer || {}} onChange={handleNestedAnswer} />;
+      case 'multi-choice':
+        return <MultiChoiceStep step={currentStep} value={currentAnswer || []} onChange={handleSingleAnswer} />;
+      case 'choice-plus-slider':
+        return <ChoicePlusSliderStep step={currentStep} value={currentAnswer || {}} onChange={handleNestedAnswer} />;
+      case 'choice-described':
+        return <ChoiceDescribedStep step={currentStep} value={currentAnswer} onChange={handleSingleAnswer} />;
+      case 'matrix-rating':
+        return <MatrixRatingStep step={currentStep} value={currentAnswer || {}} onChange={handleSingleAnswer} />;
+      case 'choice-icon-list':
+        return <ChoiceIconListStep step={currentStep} value={currentAnswer} onChange={handleSingleAnswer} />;
+      case 'contact-form':
+        return <ContactFormStep step={currentStep} value={currentAnswer || {}} onChange={handleSingleAnswer} />;
+      default:
+        return null;
     }
-
-    setTimeout(() => navigate('/results'), 2500);
   };
-
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    submitQuiz();
-  };
-
-  const progress = ((current + 1) / TOTAL) * 100;
-  const q = questions[current];
 
   return (
     <div className="quiz-page">
       <nav className="nav">
         <Link to="/" className="nav-logo">AutoWorkflows.ai</Link>
-        {phase === 'quiz' && (
-          <div className="nav-progress">
-            <span className="progress-text">Question {current + 1} of {TOTAL}</span>
-          </div>
-        )}
       </nav>
 
-      <div className="quiz-container">
-        {/* Progress Bar */}
+      <div className="quiz-container-v2">
+        {/* ── Progress Card ── */}
         {phase === 'quiz' && (
-          <div className="progress-bar-wrap">
-            <div className="progress-bar" style={{ width: `${progress}%` }} />
+          <div className="q-progress-card">
+            <div className="q-progress-row">
+              <span className="q-progress-label">
+                Question {questionNumber} of {TOTAL_QUESTIONS}
+              </span>
+              <span className="q-progress-pct">{Math.round(progress)}%</span>
+            </div>
+            <div className="q-progress-bar">
+              <div className="q-progress-bar-fill" style={{ width: `${progress}%` }} />
+            </div>
           </div>
         )}
 
-        {/* ── Quiz Phase ── */}
+        {/* ── Quiz Step ── */}
+        {phase === 'quiz' && renderStep()}
+
+        {/* ── Nav Buttons ── */}
         {phase === 'quiz' && (
-          <div className="question-slide active" key={current}>
-            <div className="question-category">
-              {categoryLabels[q.dimension]}
-            </div>
-            <h2 className="question-text">{q.text}</h2>
-            <div className="options-list">
-              {q.options.map((opt, i) => (
-                <button
-                  key={i}
-                  className={`option-btn ${answers[current] === i ? 'selected' : ''}`}
-                  onClick={() => selectOption(i)}
-                >
-                  <span className="option-letter">{String.fromCharCode(65 + i)}</span>
-                  <span className="option-text">{opt.text}</span>
-                </button>
-              ))}
-            </div>
+          <div className="q-nav">
+            <button
+              type="button"
+              className="q-nav-btn q-nav-back"
+              onClick={goBack}
+              disabled={stepIndex === 0}
+            >
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                <path d="M12.5 15L7.5 10l5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Back
+            </button>
+            <button
+              type="button"
+              className="q-nav-btn q-nav-next"
+              onClick={goNext}
+              disabled={!canProceed}
+            >
+              {isFinalStep ? 'Get My Report' : 'Next'}
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                <path d="M7.5 5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
           </div>
         )}
 
-        {/* ── Lead Capture Phase ── */}
-        {phase === 'email' && (
-          <div className="question-slide active">
-            <div className="email-capture">
-              <div className="email-icon">{'\uD83D\uDCE8'}</div>
-              <h2 className="question-text">Get your personalized report</h2>
-              <p className="email-subtitle">
-                We'll generate a detailed PDF report with your Operational Archetype,
-                strengths, blind spots, and a custom action plan.
-              </p>
-              <form className="email-form" onSubmit={handleFormSubmit}>
-                <div className="form-grid">
-                  <div className="form-row">
-                    <label className="form-label" htmlFor="f-name">Full Name *</label>
-                    <input
-                      id="f-name"
-                      type="text"
-                      placeholder="John Smith"
-                      className="form-input"
-                      value={formData.name}
-                      onChange={updateField('name')}
-                      required
-                      autoFocus
-                    />
-                  </div>
-                  <div className="form-row">
-                    <label className="form-label" htmlFor="f-email">Work Email *</label>
-                    <input
-                      id="f-email"
-                      type="email"
-                      placeholder="john@company.com"
-                      className="form-input"
-                      value={formData.email}
-                      onChange={updateField('email')}
-                      required
-                    />
-                  </div>
-                  <div className="form-row">
-                    <label className="form-label" htmlFor="f-phone">Phone Number *</label>
-                    <input
-                      id="f-phone"
-                      type="tel"
-                      placeholder="+1 (555) 000-0000"
-                      className="form-input"
-                      value={formData.phone}
-                      onChange={updateField('phone')}
-                      required
-                    />
-                  </div>
-                  <div className="form-row">
-                    <label className="form-label" htmlFor="f-company">Company Name *</label>
-                    <input
-                      id="f-company"
-                      type="text"
-                      placeholder="Acme Inc."
-                      className="form-input"
-                      value={formData.company}
-                      onChange={updateField('company')}
-                      required
-                    />
-                  </div>
-                  <div className="form-row">
-                    <label className="form-label" htmlFor="f-role">Your Role / Title *</label>
-                    <input
-                      id="f-role"
-                      type="text"
-                      placeholder="CEO, COO, Operations Manager..."
-                      className="form-input"
-                      value={formData.role}
-                      onChange={updateField('role')}
-                      required
-                    />
-                  </div>
-                  <div className="form-row">
-                    <label className="form-label" htmlFor="f-team">Team Size *</label>
-                    <select
-                      id="f-team"
-                      className="form-input"
-                      value={formData.teamSize}
-                      onChange={updateField('teamSize')}
-                      required
-                    >
-                      <option value="" disabled>Select team size</option>
-                      <option value="1-10">1 - 10 people</option>
-                      <option value="11-50">11 - 50 people</option>
-                      <option value="51-200">51 - 200 people</option>
-                      <option value="201-500">201 - 500 people</option>
-                      <option value="500+">500+ people</option>
-                    </select>
-                  </div>
-                </div>
-                <button type="submit" className="btn-primary btn-large btn-full">
-                  Generate My Report
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
-                <p className="form-disclaimer">
-                  By submitting, you agree to receive your report and occasional insights from AutoWorkflows.ai.
-                </p>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* ── Loading Phase ── */}
+        {/* ── Loading ── */}
         {phase === 'loading' && (
-          <div className="question-slide active">
+          <div className="q-card">
             <div className="loading-state">
               <div className="loading-spinner" />
               <h2 className="loading-title">Analyzing your operational DNA...</h2>
@@ -278,31 +255,6 @@ export default function QuizPage() {
                 ))}
               </div>
             </div>
-          </div>
-        )}
-
-        {/* ── Navigation ── */}
-        {phase === 'quiz' && (
-          <div className="quiz-nav">
-            <button
-              className="btn-secondary"
-              disabled={current === 0}
-              onClick={() => setCurrent((c) => Math.max(0, c - 1))}
-            >
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                <path d="M15.833 10H4.167M10 15.833L4.167 10 10 4.167" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Back
-            </button>
-            <div className="quiz-dots">
-              {questions.map((_, i) => (
-                <span
-                  key={i}
-                  className={`dot ${i === current ? 'active' : ''} ${answers[i] !== undefined ? 'answered' : ''}`}
-                />
-              ))}
-            </div>
-            <div style={{ width: 80 }} />
           </div>
         )}
       </div>
