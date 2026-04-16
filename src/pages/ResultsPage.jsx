@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { generateFallback } from '../data/fallback';
+import { downloadPdf } from '../utils/generatePdf';
 
 function loadResults() {
   const stored = sessionStorage.getItem('quizResults');
@@ -16,6 +17,13 @@ export default function ResultsPage() {
   const navigate = useNavigate();
   const results = useMemo(() => loadResults(), []);
   const barsAnimated = useRef(false);
+  const [pdfReady, setPdfReady] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    if (!results) return;
+    await downloadPdf(results);
+    setPdfReady(true);
+  };
 
   useEffect(() => {
     if (!results) navigate('/');
@@ -207,6 +215,18 @@ export default function ResultsPage() {
           </div>
         </section>
 
+        {/* ── PDF Download ── */}
+        <section className="result-section">
+          <div className="pdf-download-card">
+            <div className="pdf-icon">{'\uD83D\uDCC4'}</div>
+            <h2>Download Your Full Report</h2>
+            <p>Get a beautifully formatted PDF with all your results, insights, and action plan.</p>
+            <button className="btn-primary btn-large" onClick={handleDownloadPdf}>
+              {pdfReady ? '\u2713 Downloaded!' : '\u{1F4E5} Download PDF Report'}
+            </button>
+          </div>
+        </section>
+
         {/* ── CTA ── */}
         <section className="result-section result-cta">
           <div className="cta-card">
@@ -219,7 +239,7 @@ export default function ResultsPage() {
                   <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </a>
-              <button className="btn-secondary btn-large" onClick={() => window.print()}>
+              <button className="btn-secondary btn-large" onClick={handleDownloadPdf}>
                 {'\uD83D\uDDA8'} Download Report
               </button>
             </div>

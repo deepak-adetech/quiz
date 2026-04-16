@@ -10,11 +10,19 @@ export default function QuizPage() {
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState({});
   const [phase, setPhase] = useState('quiz'); // quiz | email | loading
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [company, setCompany] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    role: '',
+    teamSize: '',
+  });
   const [loadingStep, setLoadingStep] = useState(0);
   const [animating, setAnimating] = useState(false);
+
+  const updateField = (field) => (e) =>
+    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
 
   // ── Select an option ──
   const selectOption = useCallback((optIndex) => {
@@ -58,7 +66,7 @@ export default function QuizPage() {
   }, [phase]);
 
   // ── Submit to API ──
-  const submitQuiz = async (skipEmail = false) => {
+  const submitQuiz = async () => {
     setPhase('loading');
 
     const result = calculateArchetype(answers);
@@ -69,35 +77,33 @@ export default function QuizPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           answers,
-          name: skipEmail ? '' : name,
-          email: skipEmail ? '' : email,
-          company: skipEmail ? '' : company,
+          name: formData.name,
+          email: formData.email,
+          company: formData.company,
           result,
         }),
       });
       const data = await res.json();
 
-      // Store everything in sessionStorage
       sessionStorage.setItem('quizResults', JSON.stringify({
         ...result,
         details: data.details,
-        user: { name: skipEmail ? '' : name, email: skipEmail ? '' : email, company: skipEmail ? '' : company },
+        user: formData,
       }));
     } catch {
-      // If API fails, store with null details (results page will use fallback)
       sessionStorage.setItem('quizResults', JSON.stringify({
         ...result,
         details: null,
-        user: { name: skipEmail ? '' : name, email: skipEmail ? '' : email, company: skipEmail ? '' : company },
+        user: formData,
       }));
     }
 
     setTimeout(() => navigate('/results'), 2500);
   };
 
-  const handleEmailSubmit = (e) => {
+  const handleFormSubmit = (e) => {
     e.preventDefault();
-    submitQuiz(false);
+    submitQuiz();
   };
 
   const progress = ((current + 1) / TOTAL) * 100;
@@ -144,56 +150,107 @@ export default function QuizPage() {
           </div>
         )}
 
-        {/* ── Email Phase ── */}
+        {/* ── Lead Capture Phase ── */}
         {phase === 'email' && (
           <div className="question-slide active">
             <div className="email-capture">
               <div className="email-icon">{'\uD83D\uDCE8'}</div>
-              <h2 className="question-text">Almost there! Where should we send your results?</h2>
+              <h2 className="question-text">Get your personalized report</h2>
               <p className="email-subtitle">
-                Get your personalized Operational Archetype report with detailed insights and action steps.
+                We'll generate a detailed PDF report with your Operational Archetype,
+                strengths, blind spots, and a custom action plan.
               </p>
-              <form className="email-form" onSubmit={handleEmailSubmit}>
-                <div className="form-row">
-                  <input
-                    type="text"
-                    placeholder="Your name"
-                    className="form-input"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    autoFocus
-                  />
-                </div>
-                <div className="form-row">
-                  <input
-                    type="email"
-                    placeholder="your@email.com"
-                    className="form-input"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="form-row">
-                  <input
-                    type="text"
-                    placeholder="Company name (optional)"
-                    className="form-input"
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                  />
+              <form className="email-form" onSubmit={handleFormSubmit}>
+                <div className="form-grid">
+                  <div className="form-row">
+                    <label className="form-label" htmlFor="f-name">Full Name *</label>
+                    <input
+                      id="f-name"
+                      type="text"
+                      placeholder="John Smith"
+                      className="form-input"
+                      value={formData.name}
+                      onChange={updateField('name')}
+                      required
+                      autoFocus
+                    />
+                  </div>
+                  <div className="form-row">
+                    <label className="form-label" htmlFor="f-email">Work Email *</label>
+                    <input
+                      id="f-email"
+                      type="email"
+                      placeholder="john@company.com"
+                      className="form-input"
+                      value={formData.email}
+                      onChange={updateField('email')}
+                      required
+                    />
+                  </div>
+                  <div className="form-row">
+                    <label className="form-label" htmlFor="f-phone">Phone Number *</label>
+                    <input
+                      id="f-phone"
+                      type="tel"
+                      placeholder="+1 (555) 000-0000"
+                      className="form-input"
+                      value={formData.phone}
+                      onChange={updateField('phone')}
+                      required
+                    />
+                  </div>
+                  <div className="form-row">
+                    <label className="form-label" htmlFor="f-company">Company Name *</label>
+                    <input
+                      id="f-company"
+                      type="text"
+                      placeholder="Acme Inc."
+                      className="form-input"
+                      value={formData.company}
+                      onChange={updateField('company')}
+                      required
+                    />
+                  </div>
+                  <div className="form-row">
+                    <label className="form-label" htmlFor="f-role">Your Role / Title *</label>
+                    <input
+                      id="f-role"
+                      type="text"
+                      placeholder="CEO, COO, Operations Manager..."
+                      className="form-input"
+                      value={formData.role}
+                      onChange={updateField('role')}
+                      required
+                    />
+                  </div>
+                  <div className="form-row">
+                    <label className="form-label" htmlFor="f-team">Team Size *</label>
+                    <select
+                      id="f-team"
+                      className="form-input"
+                      value={formData.teamSize}
+                      onChange={updateField('teamSize')}
+                      required
+                    >
+                      <option value="" disabled>Select team size</option>
+                      <option value="1-10">1 - 10 people</option>
+                      <option value="11-50">11 - 50 people</option>
+                      <option value="51-200">51 - 200 people</option>
+                      <option value="201-500">201 - 500 people</option>
+                      <option value="500+">500+ people</option>
+                    </select>
+                  </div>
                 </div>
                 <button type="submit" className="btn-primary btn-large btn-full">
-                  See My Results
+                  Generate My Report
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                     <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
+                <p className="form-disclaimer">
+                  By submitting, you agree to receive your report and occasional insights from AutoWorkflows.ai.
+                </p>
               </form>
-              <button className="skip-link" onClick={() => submitQuiz(true)}>
-                Skip and see results
-              </button>
             </div>
           </div>
         )}
