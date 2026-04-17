@@ -17,24 +17,39 @@ export default function LeadDetailModal({ lead, stages, onUpdate, onDelete, onCl
 
   const startEditing = () => {
     setForm({
-      first_name: lead.first_name,
-      last_name: lead.last_name,
-      email: lead.email,
-      phone: lead.phone,
-      company: lead.company,
-      role: lead.role,
-      website: lead.website,
+      first_name: lead.first_name || '',
+      last_name: lead.last_name || '',
+      email: lead.email || '',
+      phone: lead.phone || '',
+      company: lead.company || '',
+      role: lead.role || '',
+      website: lead.website || '',
       notes: lead.notes || '',
     });
     setEditing(true);
   };
 
+  const cancelEditing = () => {
+    setEditing(false);
+    setForm({});
+  };
+
   const saveEdit = () => {
     onUpdate(lead.id, form);
     setEditing(false);
+    setForm({});
   };
 
+  // Stage changes go through immediately (not editable from the pill UI).
+  // If the user is in the middle of editing other fields, we block stage
+  // changes until they save or cancel — otherwise the merged update can
+  // overwrite their in-progress edits on the next save.
   const handleStageChange = (newStage) => {
+    if (editing) {
+      alert('Save or cancel your edits before changing stage.');
+      return;
+    }
+    if (newStage === lead.stage) return;
     onUpdate(lead.id, { stage: newStage });
   };
 
@@ -87,7 +102,7 @@ export default function LeadDetailModal({ lead, stages, onUpdate, onDelete, onCl
             ) : (
               <div className="ld-edit-actions">
                 <button className="ld-save-btn" onClick={saveEdit}>Save</button>
-                <button className="ld-cancel-btn" onClick={() => setEditing(false)}>Cancel</button>
+                <button className="ld-cancel-btn" onClick={cancelEditing}>Cancel</button>
               </div>
             )}
           </div>
@@ -194,7 +209,9 @@ export default function LeadDetailModal({ lead, stages, onUpdate, onDelete, onCl
 
         {/* Footer */}
         <div className="ld-footer">
-          <span className="ld-timestamp">Created {lead.created_at} &middot; Updated {lead.updated_at}</span>
+          <span className="ld-timestamp">
+            Created {formatDateTime(lead.created_at)} &middot; Updated {formatDateTime(lead.updated_at)}
+          </span>
           <button className="ld-delete-btn" onClick={() => onDelete(lead.id)}>
             Delete Lead
           </button>
@@ -211,4 +228,14 @@ function Field({ label, value }) {
       <span className="ld-field-value">{value || '—'}</span>
     </div>
   );
+}
+
+function formatDateTime(str) {
+  if (!str) return '—';
+  const d = new Date(str.replace(' ', 'T') + 'Z');
+  if (Number.isNaN(d.getTime())) return str;
+  return d.toLocaleString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit',
+  });
 }
