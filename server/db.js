@@ -70,6 +70,9 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_leads_created ON leads(created_at);
 `);
 
+// Migrate old 'won' stage to 'converted'
+db.prepare("UPDATE leads SET stage = 'converted' WHERE stage = 'won'").run();
+
 // ─── LEAD STAGES ─────────────────────────────────────
 
 export const LEAD_STAGES = [
@@ -78,9 +81,12 @@ export const LEAD_STAGES = [
   { id: 'qualified', label: 'Qualified', color: '#F59E0B' },
   { id: 'demo', label: 'Demo Scheduled', color: '#10B981' },
   { id: 'proposal', label: 'Proposal Sent', color: '#EC4899' },
-  { id: 'won', label: 'Won', color: '#059669' },
+  { id: 'negotiation', label: 'Negotiation', color: '#F97316' },
+  { id: 'converted', label: 'Converted', color: '#059669' },
   { id: 'lost', label: 'Lost', color: '#6B7280' },
 ];
+
+const VALID_STAGE_IDS = new Set(LEAD_STAGES.map((s) => s.id));
 
 // ─── CRUD ─────────────────────────────────────────────
 
@@ -183,10 +189,12 @@ export function updateLead(id, updates) {
   const params = { id };
 
   for (const [key, val] of Object.entries(updates)) {
-    if (allowed.includes(key)) {
-      sets.push(`${key} = @${key}`);
-      params[key] = val;
+    if (!allowed.includes(key)) continue;
+    if (key === 'stage' && !VALID_STAGE_IDS.has(val)) {
+      throw new Error(`Invalid stage: "${val}". Valid: ${[...VALID_STAGE_IDS].join(', ')}`);
     }
+    sets.push(`${key} = @${key}`);
+    params[key] = val;
   }
 
   if (sets.length === 0) return getLeadById(id);

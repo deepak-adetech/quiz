@@ -71,8 +71,12 @@ router.put('/leads/:id', (req, res) => {
   const existing = getLeadById(id);
   if (!existing) return res.status(404).json({ error: 'Lead not found' });
 
-  const updated = updateLead(id, req.body);
-  res.json(updated);
+  try {
+    const updated = updateLead(id, req.body);
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 // Delete a lead
