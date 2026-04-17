@@ -53,6 +53,7 @@ export default function ResultsPage() {
             archetypeCode: results.code,
             tagline: results.archetype.tagline,
             userInfo: results.user,
+            leadId: results.leadId,
           }),
         });
         const data = await res.json();

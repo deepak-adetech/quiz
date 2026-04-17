@@ -10,6 +10,8 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import leadsRouter from './leads.js';
+import { createLead, markEmailSent } from './db.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -26,24 +28,40 @@ const ZEPTO_FROM_EMAIL = process.env.ZEPTO_FROM_EMAIL || 'noreply@targetedge.in'
 const ZEPTO_FROM_NAME = process.env.ZEPTO_FROM_NAME || 'AutoWorkflows.ai';
 
 app.use(cors());
-// Larger JSON limit to accept base64-encoded PDF attachments
 app.use(express.json({ limit: '15mb' }));
+
+// ── Lead management CRUD routes ──
+app.use('/api', leadsRouter);
 
 // ═══════════════════════════════════════════════════
 // POST /api/generate-results
 // ═══════════════════════════════════════════════════
 app.post('/api/generate-results', async (req, res) => {
-  const { result, name } = req.body;
+  const { result, name, answers } = req.body;
 
   if (!result || !result.code) {
     return res.status(400).json({ error: 'Missing result data' });
+  }
+
+  // ── Persist lead in DB ──
+  let leadId = null;
+  try {
+    const lead = createLead({
+      contactForm: answers?.contactForm || {},
+      answers: answers || {},
+      result,
+    });
+    leadId = lead.id;
+    console.log(`[LEAD CREATED] id=${leadId} email=${lead.email} archetype=${result.code}`);
+  } catch (err) {
+    console.error('Failed to save lead:', err.message);
   }
 
   const { code, scores, percentages, archetype } = result;
 
   if (!CLAUDE_API_KEY) {
     console.warn('CLAUDE_API_KEY not set - using client-side fallback');
-    return res.json({ details: null });
+    return res.json({ details: null, leadId });
   }
 
   const prompt = buildClaudePrompt(code, scores, percentages, archetype, name || '');
@@ -66,7 +84,7 @@ app.post('/api/generate-results', async (req, res) => {
     if (!response.ok) {
       const errText = await response.text();
       console.error(`Claude API error (${response.status}):`, errText);
-      return res.json({ details: null });
+      return res.json({ details: null, leadId });
     }
 
     const data = await response.json();
@@ -75,14 +93,14 @@ app.post('/api/generate-results', async (req, res) => {
 
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
-      return res.json({ details: parsed });
+      return res.json({ details: parsed, leadId });
     }
 
     console.error('Failed to parse Claude response as JSON');
-    return res.json({ details: null });
+    return res.json({ details: null, leadId });
   } catch (err) {
     console.error('Claude API request failed:', err.message);
-    return res.json({ details: null });
+    return res.json({ details: null, leadId });
   }
 });
 
@@ -99,6 +117,7 @@ app.post('/api/send-email', async (req, res) => {
     archetypeCode,
     tagline,
     userInfo,
+    leadId,
   } = req.body;
 
   if (!email || !pdfBase64) {
@@ -147,12 +166,11 @@ app.post('/api/send-email', async (req, res) => {
       });
     }
 
-    // Log lead info for CRM pickup
-    console.log('[LEAD]', {
-      timestamp: new Date().toISOString(),
-      archetype: `${archetypeName} (${archetypeCode})`,
-      user: userInfo,
-    });
+    // Mark lead as emailed in DB
+    if (leadId) {
+      try { markEmailSent(leadId); } catch (e) { console.error('markEmailSent failed:', e.message); }
+    }
+    console.log(`[EMAIL SENT] to=${email} archetype=${archetypeName} (${archetypeCode}) leadId=${leadId || 'n/a'}`);
 
     return res.json({ sent: true });
   } catch (err) {

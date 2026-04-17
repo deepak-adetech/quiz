@@ -98,6 +98,7 @@ export default function QuizPage() {
       sessionStorage.setItem('quizResults', JSON.stringify({
         ...result,
         details: data.details,
+        leadId: data.leadId,
         user,
         profile: answers,
       }));
@@ -105,6 +106,7 @@ export default function QuizPage() {
       sessionStorage.setItem('quizResults', JSON.stringify({
         ...result,
         details: null,
+        leadId: null,
         user,
         profile: answers,
       }));
