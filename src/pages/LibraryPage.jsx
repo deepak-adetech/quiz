@@ -22,10 +22,13 @@ export default function LibraryPage() {
     <div className="library-page">
       <nav className="nav">
         <SiteLogo gradId="logoGradLib" />
-        <Link to="/quiz" className="btn-primary btn-small">
-          Take the Quiz
-          <ArrowUpRight size={14} strokeWidth={1.75} />
-        </Link>
+        <div className="nav-links">
+          <a href="https://quiz-nine-sooty.vercel.app/" className="nav-link">Quiz</a>
+          <Link to="/quiz" className="btn-primary btn-small">
+            Take the Quiz
+            <ArrowUpRight size={14} strokeWidth={1.75} />
+          </Link>
+        </div>
       </nav>
 
       <header className="library-hero">

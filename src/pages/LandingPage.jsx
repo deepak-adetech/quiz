@@ -36,6 +36,7 @@ export default function LandingPage() {
       <nav className="nav">
         <SiteLogo gradId="logoGradLanding" />
         <div className="nav-links">
+          <a href="https://quiz-nine-sooty.vercel.app/" className="nav-link">Quiz</a>
           <Link to="/library" className="nav-link">Library</Link>
           <Link to="/quiz" className="btn-primary btn-small">
             Take the Quiz

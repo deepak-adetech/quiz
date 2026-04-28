@@ -187,6 +187,9 @@ export default function QuizPage() {
     <div className="quiz-page">
       <nav className="nav">
         <SiteLogo gradId="logoGradQuiz" />
+        <div className="nav-links">
+          <a href="https://quiz-nine-sooty.vercel.app/" className="nav-link">Quiz</a>
+        </div>
       </nav>
 
       <div className="quiz-container-v2">
