@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { quizSteps, getTotalQuestionCount, getQuestionNumberForStep } from '../data/quizSteps';
 import { calculateArchetype } from '../data/scoring';
+import SiteLogo from '../components/SiteLogo';
 import SingleChoiceStep from '../components/quiz/SingleChoiceStep';
 import DualChoiceStep from '../components/quiz/DualChoiceStep';
 import MultiChoiceStep from '../components/quiz/MultiChoiceStep';
@@ -185,24 +186,7 @@ export default function QuizPage() {
   return (
     <div className="quiz-page">
       <nav className="nav">
-        <Link to="/" className="nav-logo">
-          <span className="nav-mark" aria-hidden>
-            <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
-              <defs>
-                <linearGradient id="logoGradQuiz" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#0A84FF" />
-                  <stop offset="55%" stopColor="#5E5CE6" />
-                  <stop offset="100%" stopColor="#BF5AF2" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M 15 2 C 15 11, 15 11, 26 14 C 15 17, 15 17, 15 26 C 15 17, 15 17, 4 14 C 15 11, 15 11, 15 2 Z"
-                fill="url(#logoGradQuiz)"
-              />
-            </svg>
-          </span>
-          AutoWorkFlow<span className="nav-logo-accent">.AI</span>
-        </Link>
+        <SiteLogo gradId="logoGradQuiz" />
       </nav>
 
       <div className="quiz-container-v2">

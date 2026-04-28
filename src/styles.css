@@ -94,6 +94,7 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 32px;                /* keep logo + nav-links from ever crowding each other */
   padding: 18px 28px;
   max-width: var(--max-w);
   margin: 0 auto;
@@ -102,12 +103,14 @@ a:hover {
 .nav-logo {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   font-weight: 500;
   font-size: 14.5px;
   color: var(--ink);
   letter-spacing: -0.018em;
   text-decoration: none;
+  white-space: nowrap;       /* keep "AutoWorkFlow.AI" on one line */
+  flex-shrink: 0;
 }
 .nav-logo:hover { text-decoration: none; color: var(--ink); }
 
@@ -115,10 +118,20 @@ a:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
+/* Wordmark sits flush; the gradient .AI accent has no padding so the
+   period sits right against the "w" with no inter-glyph gap. */
+.nav-wordmark {
+  display: inline-block;
+  white-space: nowrap;
+  letter-spacing: -0.018em;
+}
 .nav-logo-accent {
   font-weight: 600;
+  margin-left: 0;
+  padding: 0;
   background: linear-gradient(96deg, #0A84FF, #5E5CE6 55%, #BF5AF2);
   -webkit-background-clip: text;
   background-clip: text;
@@ -128,7 +141,8 @@ a:hover {
 .nav-links {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 .nav-link {
   padding: 8px 14px;
@@ -136,7 +150,7 @@ a:hover {
   font-weight: 500;
   color: var(--ink-70);
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: 999px;
   transition: color 0.2s ease, background 0.2s ease;
 }
 .nav-link:hover { color: var(--ink); text-decoration: none; background: var(--ink-06); }
@@ -1581,7 +1595,7 @@ select.form-input option[value=""] {
 .quiz-container-v2 {
   max-width: 920px;
   margin: 0 auto;
-  padding: 12px 24px 96px;
+  padding: 12px 24px 24px;
 }
 
 /* ── Progress card ── */
@@ -1949,27 +1963,74 @@ select.form-input option[value=""] {
   box-shadow: 0 4px 10px -3px rgba(0, 113, 227, 0.45);
 }
 
-.q-slider-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 16px;
+/* ── Timeline radio strip (drives the slider; each pill is a real */
+/*    button so users see the click target). */
+.q-timeline-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+  gap: 8px;
+  margin-bottom: 22px;
 }
-.q-slider-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--ink-55);
-  font-weight: 400;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  flex: 1;
+.q-timeline-pill {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 8px;
+  background: #FFFFFF;
+  border: 1px solid var(--ink-10);
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: var(--font);
+  color: var(--ink-70);
+  font-size: 0.82rem;
+  font-weight: 500;
   text-align: center;
+  letter-spacing: -0.01em;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
-.q-slider-label:first-child { text-align: left; }
-.q-slider-label:last-child { text-align: right; }
-.q-slider-label.active {
+.q-timeline-pill:hover {
+  border-color: rgba(0, 113, 227, 0.30);
+  background: rgba(0, 113, 227, 0.03);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+.q-timeline-pill.selected {
+  border-color: var(--azure);
+  background: rgba(0, 113, 227, 0.08);
   color: var(--azure-700);
+  box-shadow: 0 0 0 1px var(--azure), 0 8px 22px -16px rgba(0, 113, 227, 0.45);
+}
+.q-timeline-pill-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--canvas-warm);
+  border: 1px solid var(--ink-08);
+  color: var(--ink-70);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.q-timeline-pill:hover .q-timeline-pill-icon {
+  background: rgba(0, 113, 227, 0.08);
+  border-color: rgba(0, 113, 227, 0.20);
+  color: var(--azure);
+}
+.q-timeline-pill.selected .q-timeline-pill-icon {
+  background: rgba(0, 113, 227, 0.10);
+  border-color: rgba(0, 113, 227, 0.24);
+  color: var(--azure);
+}
+.q-timeline-pill-label {
   font-weight: 500;
 }
+
+/* Legacy slider labels (kept hidden — the timeline strip replaces them). */
+.q-slider-labels { display: none; }
 
 .q-slider-description {
   margin-top: 22px;
@@ -1978,6 +2039,18 @@ select.form-input option[value=""] {
   border: 1px solid var(--ink-08);
   border-radius: 14px;
   text-align: center;
+}
+.q-slider-desc-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(0, 113, 227, 0.08);
+  border: 1px solid rgba(0, 113, 227, 0.16);
+  color: var(--azure);
+  margin-bottom: 10px;
 }
 .q-slider-desc-emoji {
   font-size: 1.8rem;
@@ -2082,7 +2155,17 @@ select.form-input option[value=""] {
   font-weight: 600;
   box-shadow: 0 0 0 1px var(--azure);
 }
-.q-rating-dot { font-size: 0.75rem; line-height: 1; }
+.q-rating-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ink-18);
+}
+.q-rating-tone-critical { background: #DC2626; }
+.q-rating-tone-warn     { background: #F59E0B; }
+.q-rating-tone-good     { background: #10B981; }
+.q-rating-tone-neutral  { background: var(--ink-18); }
+.q-rating-pill.selected .q-rating-tone-neutral { background: var(--azure); }
 
 /* ── Contact form step ── */
 .q-contact-form { margin-top: 4px; }
@@ -2145,11 +2228,21 @@ select.form-input option[value=""] {
   cursor: pointer;
 }
 
-/* ── Nav buttons (Back / Next) — Apple pills ── */
+/* ── Nav buttons (Back / Next) — Apple pills, sticky at the bottom of */
+/*    the viewport so they're always reachable as the question scrolls. */
 .q-nav {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 16px;
   margin-top: 28px;
+  padding: 14px 4px calc(14px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(245, 245, 247, 0) 0%, rgba(245, 245, 247, 0.92) 28%, rgba(245, 245, 247, 0.96) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 .q-nav-btn {
   display: inline-flex;

@@ -12,6 +12,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import archetypes from '../data/archetypes';
+import SiteLogo from '../components/SiteLogo';
 
 const dimensions = [
   { Icon: Cog, label: 'Execution' },
@@ -33,24 +34,7 @@ export default function LandingPage() {
   return (
     <div className="landing-page">
       <nav className="nav">
-        <Link to="/" className="nav-logo">
-          <span className="nav-mark" aria-hidden>
-            <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
-              <defs>
-                <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#0A84FF" />
-                  <stop offset="55%" stopColor="#5E5CE6" />
-                  <stop offset="100%" stopColor="#BF5AF2" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M 15 2 C 15 11, 15 11, 26 14 C 15 17, 15 17, 15 26 C 15 17, 15 17, 4 14 C 15 11, 15 11, 15 2 Z"
-                fill="url(#logoGrad)"
-              />
-            </svg>
-          </span>
-          AutoWorkFlow<span className="nav-logo-accent">.AI</span>
-        </Link>
+        <SiteLogo gradId="logoGradLanding" />
         <div className="nav-links">
           <Link to="/library" className="nav-link">Library</Link>
           <Link to="/quiz" className="btn-primary btn-small">

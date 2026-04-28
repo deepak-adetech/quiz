@@ -37,6 +37,7 @@ export default function MultiChoiceStep({ step, value, onChange }) {
         {step.options.map((opt) => {
           const isSelected = selected.includes(opt.id);
           const disabled = !isSelected && selected.length >= maxSelect;
+          const Icon = opt.Icon;
           return (
             <button
               key={opt.id}
@@ -45,7 +46,9 @@ export default function MultiChoiceStep({ step, value, onChange }) {
               onClick={() => toggle(opt.id)}
               disabled={disabled}
             >
-              <span className="q-option-icon-box">{opt.icon}</span>
+              <span className="q-option-icon-box">
+                {Icon ? <Icon size={20} strokeWidth={1.75} /> : opt.icon}
+              </span>
               <span className="q-option-label">{opt.label}</span>
               {isSelected && (
                 <span className="q-option-check" aria-hidden>
@@ -57,16 +60,21 @@ export default function MultiChoiceStep({ step, value, onChange }) {
         })}
       </div>
 
-      {step.allOfAboveOption && (
-        <button
-          type="button"
-          className={`q-all-of-above ${allSelected ? 'selected' : ''}`}
-          onClick={() => toggle(allOfAboveId)}
-        >
-          <span className="q-option-icon-box">{step.allOfAboveOption.icon}</span>
-          <span>{step.allOfAboveOption.label}</span>
-        </button>
-      )}
+      {step.allOfAboveOption && (() => {
+        const AllIcon = step.allOfAboveOption.Icon;
+        return (
+          <button
+            type="button"
+            className={`q-all-of-above ${allSelected ? 'selected' : ''}`}
+            onClick={() => toggle(allOfAboveId)}
+          >
+            <span className="q-option-icon-box">
+              {AllIcon ? <AllIcon size={20} strokeWidth={1.75} /> : step.allOfAboveOption.icon}
+            </span>
+            <span>{step.allOfAboveOption.label}</span>
+          </button>
+        );
+      })()}
 
       <p className="q-select-counter">
         {Math.min(selected.length, maxSelect)} of {maxSelect} selected
