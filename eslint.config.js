@@ -23,7 +23,14 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // Components destructured into variables (e.g. `{ Icon } = props`) are
+      // used in JSX as `<Icon ... />`, but without eslint-plugin-react that
+      // usage is invisible to the linter. Mirror the vars ignore-pattern for
+      // args so destructured component-shaped names don't false-positive.
+      'no-unused-vars': [
+        'error',
+        { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^[A-Z_]' },
+      ],
     },
   },
 ])

@@ -54,18 +54,19 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   const CONTENT_W = W - MARGIN * 2;
   let y = 0;
 
-  // ── Colors (cream / navy palette to match the web UI) ──
-  const PRIMARY = [30, 42, 58];        // #1E2A3A navy
-  const PRIMARY_LIGHT = [232, 223, 201]; // #E8DFC9 warm beige
-  const GREEN = [5, 122, 85];          // #057A55 deeper green for cream bg
-  const GREEN_BG = [232, 240, 226];    // #E8F0E2 muted sage
-  const RED = [180, 35, 24];           // #B42318
-  const RED_BG = [250, 232, 228];      // #FAE8E4
-  const AMBER_BG = [245, 239, 228];    // #F5EFE4 warm cream
-  const TEXT = [30, 42, 58];           // #1E2A3A
-  const TEXT_SEC = [91, 106, 128];     // #5B6A80
-  const TEXT_MUTED = [122, 134, 154];  // #7A869A
-  const BORDER = [236, 228, 211];      // #ECE4D3
+  // ── Colors (Apple-style awf palette: canvas / ink / azure) ──
+  const PRIMARY = [0, 113, 227];       // #0071E3 azure
+  const PRIMARY_LIGHT = [217, 231, 252]; // #D9E7FC azure-100
+  const PRIMARY_DEEP = [5, 64, 137];   // #054089 azure-700 (for accent text on light)
+  const GREEN = [0, 113, 227];         // azure (re-used so superpowers stay on-brand)
+  const GREEN_BG = [239, 245, 254];    // #EFF5FE azure-50
+  const RED = [160, 74, 42];           // #A04A2A signal-rust
+  const RED_BG = [248, 232, 222];      // soft rust tint
+  const AMBER_BG = [245, 245, 247];    // #F5F5F7 canvas-warm
+  const TEXT = [29, 29, 31];           // #1D1D1F ink
+  const TEXT_SEC = [80, 80, 83];       // ink @ ~70%
+  const TEXT_MUTED = [129, 129, 132];  // ink @ ~50%
+  const BORDER = [232, 232, 234];      // ~ink-08
   const WHITE = [255, 255, 255];
 
   // ── Helpers ──────────────────────────────────────

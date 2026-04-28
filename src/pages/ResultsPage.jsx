@@ -1,5 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+  FileText,
+  Sparkles,
+  AlertTriangle,
+  Target,
+  Quote,
+  ArrowUpRight,
+  ArrowRight,
+  Mail,
+  Download,
+  Check,
+  Link as LinkIcon,
+  Linkedin,
+  Twitter,
+  Building2,
+} from 'lucide-react';
 import { generateFallback } from '../data/fallback';
 import { downloadPdf, generatePdfBase64 } from '../utils/generatePdf';
 
@@ -19,7 +35,6 @@ export default function ResultsPage() {
   const barsAnimated = useRef(false);
   const emailSentRef = useRef(false);
   const [pdfReady, setPdfReady] = useState(false);
-  // email status: 'idle' | 'sending' | 'sent' | 'failed' | 'no-email'
   const [emailStatus, setEmailStatus] = useState('idle');
 
   const handleDownloadPdf = async () => {
@@ -32,7 +47,6 @@ export default function ResultsPage() {
     if (!results) navigate('/');
   }, [results, navigate]);
 
-  // Auto-send email with PDF attachment once on mount
   useEffect(() => {
     if (!results || emailSentRef.current) return;
     if (!results.user?.email) return;
@@ -65,7 +79,6 @@ export default function ResultsPage() {
     })();
   }, [results]);
 
-  // Animate bars on mount
   useEffect(() => {
     if (!results || barsAnimated.current) return;
     barsAnimated.current = true;
@@ -104,9 +117,7 @@ export default function ResultsPage() {
         window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
         break;
       case 'copy':
-        navigator.clipboard.writeText(url).then(() => {
-          // visual feedback handled by caller
-        });
+        navigator.clipboard.writeText(url).then(() => {});
         break;
     }
   };
@@ -121,23 +132,44 @@ export default function ResultsPage() {
   return (
     <div className="results-page">
       <nav className="nav">
-        <Link to="/" className="nav-logo">AutoWorkflows.ai</Link>
+        <Link to="/" className="nav-logo">
+          <span className="nav-mark" aria-hidden>
+            <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+              <defs>
+                <linearGradient id="logoGradRes" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#0A84FF" />
+                  <stop offset="55%" stopColor="#5E5CE6" />
+                  <stop offset="100%" stopColor="#BF5AF2" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M 15 2 C 15 11, 15 11, 26 14 C 15 17, 15 17, 15 26 C 15 17, 15 17, 4 14 C 15 11, 15 11, 15 2 Z"
+                fill="url(#logoGradRes)"
+              />
+            </svg>
+          </span>
+          AutoWorkFlow<span className="nav-logo-accent">.AI</span>
+        </Link>
         <Link to="/quiz" className="btn-secondary btn-small">Retake Quiz</Link>
       </nav>
 
       <main className="results-container">
-        {/* ── Hero ── */}
         <section className="result-hero">
-          <div className="archetype-icon">{arch.emoji}</div>
-          <h1 className="archetype-name">{arch.name}</h1>
-          <div className="archetype-code">{code}</div>
-          <p className="archetype-tagline"><em>{arch.tagline}</em></p>
+          <div className="aurora" aria-hidden />
+          <div className="result-hero-inner">
+            <div className="archetype-icon" aria-hidden>
+              <span className="archetype-icon-emoji">{arch.emoji}</span>
+            </div>
+            <span className="archetype-code">{code}</span>
+            <h1 className="archetype-name">{arch.name}</h1>
+            <p className="archetype-tagline">{arch.tagline}</p>
+          </div>
         </section>
 
-        {/* ── Dimension Scores ── */}
         <section className="result-section scores-section">
-          <h2 className="section-heading">Your Operational DNA</h2>
-          <div className="dimension-scores">
+          <div className="eyebrow eyebrow-center">Your operational DNA</div>
+          <h2 className="section-heading">Where you sit on the four axes.</h2>
+          <div className="dimension-scores bp-card">
             {dimRows.map((dim) => (
               <div className="dimension-row" key={dim.key}>
                 <div className="dim-labels">
@@ -149,17 +181,16 @@ export default function ResultsPage() {
                   <div className="dim-bar-fill" data-pct={percentages[dim.key]} />
                   <div className="dim-bar-marker" data-left={percentages[dim.key]} />
                 </div>
-                <div className="dim-score">{percentages[dim.key]}%</div>
+                <div className="dim-score mono">{percentages[dim.key]}%</div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* ── Two Column: Characteristics + Superpowers/Kryptonite ── */}
         <section className="result-section result-two-col">
-          <div className="result-card card-characteristics">
+          <div className="result-card bp-card card-characteristics">
             <h2 className="card-heading">
-              <span className="card-icon">{'\uD83D\uDCC4'}</span>
+              <span className="card-icon"><FileText size={18} strokeWidth={1.75} /></span>
               Characteristics
             </h2>
             {[
@@ -177,30 +208,30 @@ export default function ResultsPage() {
           </div>
 
           <div className="result-right-col">
-            <div className="result-card card-superpowers">
+            <div className="result-card bp-card card-superpowers">
               <h2 className="card-heading">
-                <span className="card-icon">{'\u2728'}</span>
+                <span className="card-icon card-icon-azure"><Sparkles size={18} strokeWidth={1.75} /></span>
                 Superpowers
               </h2>
               <ul className="trait-list">
                 {d.superpowers.map((s, i) => (
                   <li key={i}>
-                    <span className="trait-emoji">{d.superpower_emojis?.[i] || '\u2714'}</span>
+                    <span className="trait-bullet"><Check size={14} strokeWidth={2.25} /></span>
                     {s}
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="result-card card-kryptonite">
+            <div className="result-card bp-card card-kryptonite">
               <h2 className="card-heading">
-                <span className="card-icon">{'\u26A0\uFE0F'}</span>
+                <span className="card-icon card-icon-rust"><AlertTriangle size={18} strokeWidth={1.75} /></span>
                 Kryptonite
               </h2>
               <ul className="trait-list">
                 {d.kryptonite.map((k, i) => (
                   <li key={i}>
-                    <span className="trait-emoji">{d.kryptonite_emojis?.[i] || '\u274C'}</span>
+                    <span className="trait-bullet trait-bullet-rust"><AlertTriangle size={12} strokeWidth={2.25} /></span>
                     {k}
                   </li>
                 ))}
@@ -209,56 +240,56 @@ export default function ResultsPage() {
           </div>
         </section>
 
-        {/* ── Three Column ── */}
         <section className="result-section result-three-col">
-          <div className="result-card card-starting">
+          <div className="result-card bp-card card-starting">
             <h2 className="card-heading">
-              <span className="card-icon">{'\uD83C\uDFAF'}</span>
+              <span className="card-icon"><Target size={18} strokeWidth={1.75} /></span>
               Ideal Starting Point
             </h2>
             <ol className="starting-list">
               {d.ideal_starting_points.map((step, i) => (
                 <li key={i}>
-                  <span className="step-num">{i + 1}</span>
+                  <span className="step-num mono">{String(i + 1).padStart(2, '0')}</span>
                   {step}
                 </li>
               ))}
             </ol>
           </div>
 
-          <div className="result-card card-famous">
+          <div className="result-card bp-card card-famous">
             <h2 className="card-heading">
-              <span className="card-icon">{'\uD83D\uDCAC'}</span>
+              <span className="card-icon"><Quote size={18} strokeWidth={1.75} /></span>
               Famous Last Words
             </h2>
             <p className="famous-quote">{d.famous_last_words}</p>
           </div>
 
-          <div className="result-card card-example">
-            <h2 className="card-heading">Real World Example</h2>
+          <div className="result-card bp-card card-example">
+            <h2 className="card-heading">
+              <span className="card-icon"><Building2 size={18} strokeWidth={1.75} /></span>
+              Real World Example
+            </h2>
             <p>{d.real_world_example}</p>
           </div>
         </section>
 
-        {/* ── Spirit Animal ── */}
         <section className="result-section">
-          <div className="result-card card-animal">
+          <div className="result-card bp-card card-animal">
             <div className="animal-header">
-              <span className="animal-emoji">{arch.animalEmoji}</span>
+              <span className="animal-emoji" aria-hidden>{arch.animalEmoji}</span>
               <h2 className="card-heading">Why {arch.animal}?</h2>
             </div>
             <p className="animal-text">{d.why_animal}</p>
           </div>
         </section>
 
-        {/* ── PDF Download + Email Status ── */}
         <section className="result-section">
           <div className="pdf-download-card">
-            <div className="pdf-icon">{'\uD83D\uDCC4'}</div>
-            <h2>Your Full Report is Ready</h2>
-            <p>A beautifully formatted PDF with all your results, insights, and action plan.</p>
+            <div className="pdf-icon" aria-hidden><FileText size={28} strokeWidth={1.5} /></div>
+            <div className="eyebrow eyebrow-center">Your full report</div>
+            <h2>Beautifully formatted, ready to share.</h2>
+            <p>A polished PDF with all your results, insights, and action plan.</p>
 
-            {/* Email status banner */}
             {emailStatus === 'sending' && (
               <div className="email-status status-sending">
                 <span className="status-spinner" />
@@ -267,50 +298,48 @@ export default function ResultsPage() {
             )}
             {emailStatus === 'sent' && (
               <div className="email-status status-sent">
-                <span>{'\u2709\uFE0F'}</span>
-                <span>We've sent your PDF report to <strong>{results.user?.email}</strong>. Check your inbox!</span>
+                <Mail size={14} strokeWidth={1.75} />
+                <span>We've sent your PDF report to <strong>{results.user?.email}</strong>. Check your inbox.</span>
               </div>
             )}
             {emailStatus === 'failed' && (
               <div className="email-status status-failed">
-                <span>{'\u26A0\uFE0F'}</span>
-                <span>Couldn't email your report right now. Please use the download button below.</span>
+                <AlertTriangle size={14} strokeWidth={1.75} />
+                <span>Couldn't email your report right now. Use the download button below.</span>
               </div>
             )}
 
-            <button className="btn-primary btn-large" onClick={handleDownloadPdf}>
-              {pdfReady ? '\u2713 Downloaded!' : '\u{1F4E5} Download PDF Report'}
+            <button className="btn-grad btn-large" onClick={handleDownloadPdf}>
+              {pdfReady ? <><Check size={16} strokeWidth={2} /> Downloaded</> : <><Download size={16} strokeWidth={1.75} /> Download PDF Report</>}
             </button>
           </div>
         </section>
 
-        {/* ── CTA ── */}
         <section className="result-section result-cta">
-          <div className="cta-card">
-            <h2>Ready to Transform Your Operations?</h2>
+          <div className="cta-card bp-card">
+            <div className="eyebrow eyebrow-center">Engage</div>
+            <h2>Ready to transform your operations?</h2>
             <p>Now that you know your archetype, let's build a roadmap to level up your operational maturity.</p>
             <div className="cta-buttons">
-              <a href="https://autoworkflows.ai" className="btn-primary btn-large" target="_blank" rel="noreferrer">
+              <a href="https://autoworkflows.ai" className="btn-grad btn-large" target="_blank" rel="noreferrer">
                 Book a Strategy Call
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <ArrowUpRight size={16} strokeWidth={1.75} />
               </a>
-              <button className="btn-secondary btn-large" onClick={handleDownloadPdf}>
-                {'\uD83D\uDDA8'} Download Report
+              <button className="btn-ghost btn-large" onClick={handleDownloadPdf}>
+                <Download size={16} strokeWidth={1.75} /> Download Report
               </button>
             </div>
             <div className="share-section">
-              <p className="share-label">Share your archetype:</p>
+              <p className="share-label mono">Share your archetype</p>
               <div className="share-buttons">
-                <button className="share-btn" onClick={() => shareResult('twitter')} title="Share on X/Twitter">
-                  &#120143;
+                <button className="share-btn" onClick={() => shareResult('twitter')} title="Share on X/Twitter" aria-label="Share on Twitter">
+                  <Twitter size={15} strokeWidth={1.75} />
                 </button>
-                <button className="share-btn" onClick={() => shareResult('linkedin')} title="Share on LinkedIn">
-                  in
+                <button className="share-btn" onClick={() => shareResult('linkedin')} title="Share on LinkedIn" aria-label="Share on LinkedIn">
+                  <Linkedin size={15} strokeWidth={1.75} />
                 </button>
-                <button className="share-btn" onClick={() => shareResult('copy')} title="Copy link">
-                  {'\uD83D\uDD17'}
+                <button className="share-btn" onClick={() => shareResult('copy')} title="Copy link" aria-label="Copy link">
+                  <LinkIcon size={15} strokeWidth={1.75} />
                 </button>
               </div>
             </div>
@@ -319,7 +348,10 @@ export default function ResultsPage() {
       </main>
 
       <footer className="landing-footer">
-        <p>&copy; {new Date().getFullYear()} AutoWorkflows.ai. All rights reserved.</p>
+        <div className="footer-inner">
+          <span className="mono">© {new Date().getFullYear()} AutoWorkFlow.AI</span>
+          <span className="mono footer-muted">All rights reserved</span>
+        </div>
       </footer>
     </div>
   );
