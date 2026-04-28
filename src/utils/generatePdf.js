@@ -9,6 +9,43 @@
  * @param {Object}  params.details      - Claude-generated report details
  * @param {Object}  params.user         - { name, email, phone, company, role, teamSize }
  */
+// jsPDF's standard Helvetica font is encoded in WinAnsi (cp1252).
+// Anything outside that range — emoji, CJK, most arrows/symbols — silently
+// renders as blank boxes. Sanitize all dynamic text before drawing.
+const CP1252_EXTRAS = new Set([
+  0x20AC, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6,
+  0x2030, 0x0160, 0x2039, 0x0152, 0x017D, 0x2018, 0x2019, 0x201C,
+  0x201D, 0x2022, 0x2013, 0x2014, 0x02DC, 0x2122, 0x0161, 0x203A,
+  0x0153, 0x017E, 0x0178,
+]);
+
+const ASCII_FALLBACK = {
+  '‘': "'", '’': "'", '‚': ',', '‛': "'",
+  '“': '"', '”': '"', '„': '"', '‟': '"',
+  '–': '-', '—': '-', '−': '-', '­': '',
+  '…': '...', ' ': ' ', '​': '', '‌': '', '‍': '',
+  '﻿': '', '→': '->', '←': '<-', '↔': '<->',
+  '✓': 'v', '✔': 'v', '✗': 'x', '✘': 'x',
+  '★': '*', '☆': '*', '⚠': '!', '️': '',
+};
+
+function pdfSafe(text) {
+  if (text == null) return '';
+  const s = String(text);
+  let out = '';
+  for (let i = 0; i < s.length; i++) {
+    const code = s.charCodeAt(i);
+    // Surrogate pair = emoji from astral plane (e.g. 🦉, 📊). Drop both halves.
+    if (code >= 0xD800 && code <= 0xDBFF) { i++; continue; }
+    if (code <= 0xFF) { out += s[i]; continue; }
+    if (CP1252_EXTRAS.has(code)) { out += s[i]; continue; }
+    const fallback = ASCII_FALLBACK[s[i]];
+    if (fallback != null) { out += fallback; continue; }
+    // Drop anything else (misc symbols, dingbats, CJK, etc.).
+  }
+  return out.replace(/[ \t]+/g, ' ').replace(/\s+\n/g, '\n').trim();
+}
+
 export async function generatePdf({ code, percentages, archetype: arch, details: d, user }) {
   const { jsPDF } = await import('jspdf');
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -17,18 +54,18 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   const CONTENT_W = W - MARGIN * 2;
   let y = 0;
 
-  // ── Colors ───────────────────────────────────────
-  const PRIMARY = [37, 99, 235];       // #2563EB
-  const PRIMARY_LIGHT = [219, 234, 254]; // #DBEAFE
-  const GREEN = [16, 185, 129];        // #10B981
-  const GREEN_BG = [240, 253, 244];    // #F0FDF4
-  const RED = [239, 68, 68];           // #EF4444
-  const RED_BG = [254, 242, 242];      // #FEF2F2
-  const AMBER_BG = [255, 247, 237];    // #FFF7ED
-  const TEXT = [30, 41, 59];           // #1E293B
-  const TEXT_SEC = [100, 116, 139];    // #64748B
-  const TEXT_MUTED = [148, 163, 184];  // #94A3B8
-  const BORDER = [226, 232, 240];      // #E2E8F0
+  // ── Colors (cream / navy palette to match the web UI) ──
+  const PRIMARY = [30, 42, 58];        // #1E2A3A navy
+  const PRIMARY_LIGHT = [232, 223, 201]; // #E8DFC9 warm beige
+  const GREEN = [5, 122, 85];          // #057A55 deeper green for cream bg
+  const GREEN_BG = [232, 240, 226];    // #E8F0E2 muted sage
+  const RED = [180, 35, 24];           // #B42318
+  const RED_BG = [250, 232, 228];      // #FAE8E4
+  const AMBER_BG = [245, 239, 228];    // #F5EFE4 warm cream
+  const TEXT = [30, 42, 58];           // #1E2A3A
+  const TEXT_SEC = [91, 106, 128];     // #5B6A80
+  const TEXT_MUTED = [122, 134, 154];  // #7A869A
+  const BORDER = [236, 228, 211];      // #ECE4D3
   const WHITE = [255, 255, 255];
 
   // ── Helpers ──────────────────────────────────────
@@ -42,8 +79,13 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
     doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
   }
 
+  // All text drawing routes through these so emojis / smart quotes never reach jsPDF.
+  function drawText(text, x, drawY, opts) {
+    doc.text(pdfSafe(text), x, drawY, opts);
+  }
+
   function addWrappedText(text, x, startY, maxWidth, lineHeight) {
-    const lines = doc.splitTextToSize(text, maxWidth);
+    const lines = doc.splitTextToSize(pdfSafe(text), maxWidth);
     lines.forEach((line, i) => {
       doc.text(line, x, startY + i * lineHeight);
     });
@@ -89,19 +131,19 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   setColor(PRIMARY);
-  doc.text('AutoWorkflows.ai', W / 2, y, { align: 'center' });
+  drawText('AutoWorkflows.ai', W / 2, y, { align: 'center' });
   y += 5;
   doc.setFontSize(8);
   setColor(TEXT_MUTED);
   doc.setFont('helvetica', 'normal');
-  doc.text('OPERATIONAL ARCHETYPE REPORT', W / 2, y, { align: 'center' });
+  drawText('OPERATIONAL ARCHETYPE REPORT', W / 2, y, { align: 'center' });
   y += 20;
 
   // Archetype name
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(32);
   setColor(TEXT);
-  doc.text(arch.name.toUpperCase(), W / 2, y, { align: 'center' });
+  drawText(arch.name.toUpperCase(), W / 2, y, { align: 'center' });
   y += 10;
 
   // Code badge
@@ -111,14 +153,14 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   doc.setFontSize(11);
   setColor(PRIMARY);
   doc.setFont('helvetica', 'bold');
-  doc.text(code, W / 2, y + 3, { align: 'center' });
+  drawText(code, W / 2, y + 3, { align: 'center' });
   y += 16;
 
   // Tagline
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(12);
   setColor(TEXT_SEC);
-  const taglineLines = doc.splitTextToSize(`"${arch.tagline}"`, CONTENT_W - 20);
+  const taglineLines = doc.splitTextToSize(pdfSafe(`"${arch.tagline}"`), CONTENT_W - 20);
   taglineLines.forEach((line) => {
     doc.text(line, W / 2, y, { align: 'center' });
     y += 6;
@@ -130,24 +172,24 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     setColor(TEXT_MUTED);
-    doc.text('PREPARED FOR', W / 2, y, { align: 'center' });
+    drawText('PREPARED FOR', W / 2, y, { align: 'center' });
     y += 6;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     setColor(TEXT);
-    doc.text(user.name, W / 2, y, { align: 'center' });
+    drawText(user.name, W / 2, y, { align: 'center' });
     y += 5;
     if (user.company) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
       setColor(TEXT_SEC);
       const roleLine = [user.role, user.company].filter(Boolean).join(' at ');
-      doc.text(roleLine, W / 2, y, { align: 'center' });
+      drawText(roleLine, W / 2, y, { align: 'center' });
       y += 5;
     }
     if (user.teamSize) {
       doc.setFontSize(9);
-      doc.text(`Team size: ${user.teamSize}`, W / 2, y, { align: 'center' });
+      drawText(`Team size: ${user.teamSize}`, W / 2, y, { align: 'center' });
       y += 5;
     }
   }
@@ -155,7 +197,7 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
 
   // ── Dimension Scores ──
   const dimSectionY = y;
-  setFill([248, 250, 252]); // bg
+  setFill(AMBER_BG);
   doc.roundedRect(MARGIN, dimSectionY, CONTENT_W, 72, 4, 4, 'F');
   setDraw(BORDER);
   doc.setLineWidth(0.3);
@@ -165,7 +207,7 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   setColor(TEXT);
-  doc.text('Your Operational DNA', W / 2, y, { align: 'center' });
+  drawText('Your Operational DNA', W / 2, y, { align: 'center' });
   y += 10;
 
   const dims = [
@@ -182,20 +224,20 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6);
     setColor(TEXT_MUTED);
-    doc.text(dim.low, barX - 2, y - 1, { align: 'right' });
-    doc.text(dim.high, barX + barW + 2, y - 1);
+    drawText(dim.low, barX - 2, y - 1, { align: 'right' });
+    drawText(dim.high, barX + barW + 2, y - 1);
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7);
     setColor(TEXT);
-    doc.text(dim.label.toUpperCase(), W / 2, y - 1, { align: 'center' });
+    drawText(dim.label.toUpperCase(), W / 2, y - 1, { align: 'center' });
 
     drawHorizontalBar(barX, y + 1, barW, dim.pct, 3.5);
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     setColor(PRIMARY);
-    doc.text(`${dim.pct}%`, barX + barW + 14, y + 4, { align: 'right' });
+    drawText(`${dim.pct}%`, barX + barW + 14, y + 4, { align: 'right' });
 
     y += 13;
   });
@@ -210,7 +252,7 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   setColor(TEXT);
-  doc.text('Characteristics', MARGIN, y);
+  drawText('Characteristics', MARGIN, y);
   y += 8;
 
   const characteristics = [
@@ -225,13 +267,13 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
     checkPageBreak(25);
 
     // Left border accent
-    setFill(BORDER);
+    setFill(PRIMARY);
     doc.rect(MARGIN, y - 3, 1.2, 14, 'F');
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7);
     setColor(TEXT_SEC);
-    doc.text(c.label, MARGIN + 4, y);
+    drawText(c.label, MARGIN + 4, y);
     y += 4;
 
     doc.setFont('helvetica', 'normal');
@@ -252,47 +294,48 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   doc.rect(0, 0, W, 3, 'F');
 
   // ── Superpowers ──
-  const spBoxH = 52;
+  // Box height has to flex with the number of items so longer responses don't clip.
+  const spLineH = 7.5;
+  const spBoxH = Math.max(52, 18 + d.superpowers.length * spLineH);
   setFill(GREEN_BG);
   doc.roundedRect(MARGIN, y, CONTENT_W, spBoxH, 4, 4, 'F');
-  setDraw([187, 247, 208]); // green border
+  setDraw([197, 215, 188]);
   doc.setLineWidth(0.4);
   doc.roundedRect(MARGIN, y, CONTENT_W, spBoxH, 4, 4, 'S');
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
   setColor(GREEN);
-  doc.text('Superpowers', MARGIN + 8, y + 10);
+  drawText('Superpowers', MARGIN + 8, y + 10);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9.5);
   setColor(TEXT);
   d.superpowers.forEach((s, i) => {
-    const emoji = d.superpower_emojis?.[i] || '\u2714';
-    doc.text(`${emoji}  ${s}`, MARGIN + 10, y + 20 + i * 7.5);
+    drawText(`\u2022  ${s}`, MARGIN + 10, y + 20 + i * spLineH);
   });
 
   y += spBoxH + 10;
 
   // ── Kryptonite ──
-  const kBoxH = 52;
+  const kLineH = 7.5;
+  const kBoxH = Math.max(52, 18 + d.kryptonite.length * kLineH);
   setFill(RED_BG);
   doc.roundedRect(MARGIN, y, CONTENT_W, kBoxH, 4, 4, 'F');
-  setDraw([254, 202, 202]); // red border
+  setDraw([225, 180, 170]);
   doc.setLineWidth(0.4);
   doc.roundedRect(MARGIN, y, CONTENT_W, kBoxH, 4, 4, 'S');
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
   setColor(RED);
-  doc.text('Kryptonite', MARGIN + 8, y + 10);
+  drawText('Kryptonite', MARGIN + 8, y + 10);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9.5);
   setColor(TEXT);
   d.kryptonite.forEach((k, i) => {
-    const emoji = d.kryptonite_emojis?.[i] || '\u274C';
-    doc.text(`${emoji}  ${k}`, MARGIN + 10, y + 20 + i * 7.5);
+    drawText(`\u2022  ${k}`, MARGIN + 10, y + 20 + i * kLineH);
   });
 
   y += kBoxH + 14;
@@ -302,18 +345,18 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
   setColor(TEXT);
-  doc.text('Ideal Starting Point', MARGIN, y);
+  drawText('Ideal Starting Point', MARGIN, y);
   y += 10;
 
   d.ideal_starting_points.forEach((step, i) => {
     checkPageBreak(12);
     // Number circle
-    setFill(GREEN);
+    setFill(PRIMARY);
     doc.circle(MARGIN + 5, y - 1, 4, 'F');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     setColor(WHITE);
-    doc.text(String(i + 1), MARGIN + 5, y + 0.5, { align: 'center' });
+    drawText(String(i + 1), MARGIN + 5, y + 0.5, { align: 'center' });
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
@@ -326,7 +369,7 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
 
   // ── Famous Last Words ──
   checkPageBreak(30);
-  setFill([248, 250, 252]);
+  setFill(AMBER_BG);
   doc.roundedRect(MARGIN, y, CONTENT_W, 24, 4, 4, 'F');
   setDraw(BORDER);
   doc.setLineWidth(0.3);
@@ -335,11 +378,11 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   setColor(TEXT_SEC);
-  doc.text('FAMOUS LAST WORDS', MARGIN + 8, y + 8);
+  drawText('FAMOUS LAST WORDS', MARGIN + 8, y + 8);
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(11);
   setColor(TEXT);
-  const flwLines = doc.splitTextToSize(d.famous_last_words, CONTENT_W - 16);
+  const flwLines = doc.splitTextToSize(pdfSafe(d.famous_last_words), CONTENT_W - 16);
   flwLines.forEach((line, i) => {
     doc.text(line, MARGIN + 8, y + 16 + i * 5);
   });
@@ -351,7 +394,7 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   setColor(TEXT);
-  doc.text('Real World Example', MARGIN, y);
+  drawText('Real World Example', MARGIN, y);
   y += 7;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9.5);
@@ -363,18 +406,18 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   checkPageBreak(45);
   setFill(AMBER_BG);
   const animalBoxStart = y;
-  const animalText = d.why_animal;
-  const animalLines = doc.splitTextToSize(animalText, CONTENT_W - 16);
+  const animalLines = doc.splitTextToSize(pdfSafe(d.why_animal), CONTENT_W - 16);
   const animalBoxH = 18 + animalLines.length * 4.5;
   doc.roundedRect(MARGIN, y, CONTENT_W, animalBoxH, 4, 4, 'F');
-  setDraw([253, 230, 138]); // amber border
+  setDraw(BORDER);
   doc.setLineWidth(0.4);
   doc.roundedRect(MARGIN, y, CONTENT_W, animalBoxH, 4, 4, 'S');
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   setColor(TEXT);
-  doc.text(`${arch.animalEmoji}  Why ${arch.animal}?`, MARGIN + 8, y + 10);
+  // Spirit-animal emoji intentionally dropped: jsPDF Helvetica can't render astral chars.
+  drawText(`Why ${arch.animal}?`, MARGIN + 8, y + 10);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9.5);
@@ -391,10 +434,10 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   setColor(WHITE);
-  doc.text('Ready to Transform Your Operations?', W / 2, y + 12, { align: 'center' });
+  drawText('Ready to Transform Your Operations?', W / 2, y + 12, { align: 'center' });
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  doc.text('Book a free strategy call at autoworkflows.ai', W / 2, y + 22, { align: 'center' });
+  drawText('Book a free strategy call at autoworkflows.ai', W / 2, y + 22, { align: 'center' });
 
   // ── Footer on every page ──
   const totalPages = doc.internal.getNumberOfPages();
@@ -403,7 +446,7 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
-    doc.text(`AutoWorkflows.ai  |  Operational Archetype Report  |  Page ${p} of ${totalPages}`, W / 2, 290, { align: 'center' });
+    drawText(`AutoWorkflows.ai  |  Operational Archetype Report  |  Page ${p} of ${totalPages}`, W / 2, 290, { align: 'center' });
   }
 
   return doc;
