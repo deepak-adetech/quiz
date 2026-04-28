@@ -1,3 +1,5 @@
+import { Check } from 'lucide-react';
+
 /**
  * Multi-select: pick up to N options. "All of the above" is a
  * shortcut that selects every regular option at once.
@@ -45,7 +47,11 @@ export default function MultiChoiceStep({ step, value, onChange }) {
             >
               <span className="q-option-icon-box">{opt.icon}</span>
               <span className="q-option-label">{opt.label}</span>
-              {isSelected && <span className="q-option-check">{'\u2713'}</span>}
+              {isSelected && (
+                <span className="q-option-check" aria-hidden>
+                  <Check size={13} strokeWidth={2.5} />
+                </span>
+              )}
             </button>
           );
         })}

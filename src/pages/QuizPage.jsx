@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { quizSteps, getTotalQuestionCount, getQuestionNumberForStep } from '../data/quizSteps';
 import { calculateArchetype } from '../data/scoring';
 import SingleChoiceStep from '../components/quiz/SingleChoiceStep';
@@ -184,7 +185,24 @@ export default function QuizPage() {
   return (
     <div className="quiz-page">
       <nav className="nav">
-        <Link to="/" className="nav-logo">AutoWorkflows.ai</Link>
+        <Link to="/" className="nav-logo">
+          <span className="nav-mark" aria-hidden>
+            <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+              <defs>
+                <linearGradient id="logoGradQuiz" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#0A84FF" />
+                  <stop offset="55%" stopColor="#5E5CE6" />
+                  <stop offset="100%" stopColor="#BF5AF2" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M 15 2 C 15 11, 15 11, 26 14 C 15 17, 15 17, 15 26 C 15 17, 15 17, 4 14 C 15 11, 15 11, 15 2 Z"
+                fill="url(#logoGradQuiz)"
+              />
+            </svg>
+          </span>
+          AutoWorkFlow<span className="nav-logo-accent">.AI</span>
+        </Link>
       </nav>
 
       <div className="quiz-container-v2">
@@ -193,7 +211,7 @@ export default function QuizPage() {
           <div className="q-progress-card">
             <div className="q-progress-row">
               <span className="q-progress-label">
-                Question {questionNumber} of {TOTAL_QUESTIONS}
+                Question {String(questionNumber).padStart(2, '0')} / {String(TOTAL_QUESTIONS).padStart(2, '0')}
               </span>
               <span className="q-progress-pct">{Math.round(progress)}%</span>
             </div>
@@ -215,9 +233,7 @@ export default function QuizPage() {
               onClick={goBack}
               disabled={stepIndex === 0}
             >
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                <path d="M12.5 15L7.5 10l5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <ArrowLeft size={15} strokeWidth={1.75} />
               Back
             </button>
             <button
@@ -227,26 +243,24 @@ export default function QuizPage() {
               disabled={!canProceed}
             >
               {isFinalStep ? 'Get My Report' : 'Next'}
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                <path d="M7.5 5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <ArrowRight size={15} strokeWidth={1.75} />
             </button>
           </div>
         )}
 
         {/* ── Loading ── */}
         {phase === 'loading' && (
-          <div className="q-card">
+          <div className="q-card quiz-loading-card">
             <div className="loading-state">
               <div className="loading-spinner" />
-              <h2 className="loading-title">Analyzing your operational DNA...</h2>
-              <p className="loading-text">Our AI is generating your personalized archetype report.</p>
+              <h2 className="loading-title">Analyzing your operational DNA</h2>
+              <p className="loading-text">Generating your personalized archetype report.</p>
               <div className="loading-steps">
                 {[
-                  'Calculating dimension scores...',
-                  'Identifying your archetype...',
-                  'Generating insights and recommendations...',
-                  'Preparing your report...',
+                  'Calculating dimension scores',
+                  'Identifying your archetype',
+                  'Generating insights and recommendations',
+                  'Preparing your report',
                 ].map((text, i) => (
                   <div
                     key={i}

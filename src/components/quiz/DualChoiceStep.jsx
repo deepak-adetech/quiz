@@ -1,3 +1,5 @@
+import { Info } from 'lucide-react';
+
 /**
  * Two single-choice questions on one screen. Options are horizontal
  * pills with a main label and a sub label ("1-10 / Startup").
@@ -27,7 +29,7 @@ export default function DualChoiceStep({ step, value, onChange }) {
           </div>
           {q.note && (
             <div className="q-note">
-              <span className="q-note-icon">{'\u2139\uFE0F'}</span>
+              <span className="q-note-icon"><Info size={15} strokeWidth={1.75} /></span>
               <span>{q.note}</span>
             </div>
           )}
