@@ -135,8 +135,7 @@ export default function ResultsPage() {
       <nav className="nav">
         <SiteLogo gradId="logoGradRes" />
         <div className="nav-links">
-          <a href="https://quiz-nine-sooty.vercel.app/" className="nav-link">Quiz</a>
-          <Link to="/quiz" className="btn-secondary btn-small">Retake Quiz</Link>
+          <Link to="/" className="btn-secondary btn-small">Retake Quiz</Link>
         </div>
       </nav>
 

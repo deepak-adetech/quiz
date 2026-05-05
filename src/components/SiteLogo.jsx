@@ -1,20 +1,9 @@
-/**
- * Shared brand mark + wordmark used in every nav. Always points to the
- * marketing site (https://awf-alpha.vercel.app/) so the quiz reads as
- * a sub-experience of the main AutoWorkFlow.AI product. The href is
- * an absolute URL on purpose — react-router's <Link> would treat it
- * as an internal route.
- *
- * `gradId` keeps the inline gradient unique per render site so two
- * nav logos on the same page (impossible today, but cheap insurance)
- * don't share a defs id.
- */
 export default function SiteLogo({ gradId = 'siteLogoGrad' }) {
   return (
     <a
-      href="https://awf-alpha.vercel.app/"
+      href="https://www.cometlab.in"
       className="nav-logo"
-      aria-label="AutoWorkFlow.AI — go to the main site"
+      aria-label="CometLab — go to the main site"
     >
       <span className="nav-mark" aria-hidden>
         <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
