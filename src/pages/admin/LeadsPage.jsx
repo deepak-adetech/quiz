@@ -106,7 +106,7 @@ export default function LeadsPage() {
   return (
     <div className="admin-page">
       <nav className="nav">
-        <Link to="/" className="nav-logo">AutoWorkflows.ai</Link>
+        <Link to="/" className="nav-logo">Comet Lab</Link>
         <span className="admin-badge">Admin</span>
       </nav>
 

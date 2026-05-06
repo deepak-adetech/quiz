@@ -288,11 +288,11 @@ function buildEmailHtml({ name, archetypeName, archetypeCode, tagline }) {
               </ul>
 
               <div style="text-align:center;margin:32px 0;">
-                <a href="https://autoworkflows.ai" style="display:inline-block;background:#2563eb;color:#ffffff;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:600;font-size:15px;">Book a Strategy Call &rarr;</a>
+                <a href="https://www.cometlab.in" style="display:inline-block;background:#2563eb;color:#ffffff;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:600;font-size:15px;">Book a Strategy Call &rarr;</a>
               </div>
 
               <p style="margin:0 0 8px;font-size:14px;line-height:1.6;color:#475569;">Questions? Just hit reply — we read every response.</p>
-              <p style="margin:0;font-size:14px;line-height:1.6;color:#475569;">— The AutoWorkflows.ai Team</p>
+              <p style="margin:0;font-size:14px;line-height:1.6;color:#475569;">— The Comet Lab Team</p>
             </td>
           </tr>
           <!-- Footer -->
