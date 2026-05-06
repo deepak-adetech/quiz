@@ -307,7 +307,7 @@ export default function ResultsPage() {
             <h2>Ready to transform your operations?</h2>
             <p>Now that you know your archetype, let's build a roadmap to level up your operational maturity.</p>
             <div className="cta-buttons">
-              <a href="https://autoworkflows.ai" className="btn-grad btn-large" target="_blank" rel="noreferrer">
+              <a href="https://www.cometlab.in" className="btn-grad btn-large" target="_blank" rel="noreferrer">
                 Book a Strategy Call
                 <ArrowUpRight size={16} strokeWidth={1.75} />
               </a>
@@ -335,7 +335,7 @@ export default function ResultsPage() {
 
       <footer className="landing-footer">
         <div className="footer-inner">
-          <span className="mono">© {new Date().getFullYear()} AutoWorkFlow.AI</span>
+          <span className="mono">© {new Date().getFullYear()} CometLab</span>
           <span className="mono footer-muted">All rights reserved</span>
         </div>
       </footer>

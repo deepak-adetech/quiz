@@ -240,7 +240,7 @@ Return ONLY a valid JSON object with this exact structure:
     "why_animal": "2-3 sentence explanation of why ${archetype.animal} perfectly represents this archetype - use the animal's real traits as metaphors"
 }
 
-Be creative, specific, and insightful. Superpowers should feel genuinely positive. Kryptonite should feel honest but not harsh. Starting points should be immediately actionable. Famous last words should make someone laugh because it's so true.`;
+Be specific, direct, and genuinely honest. Superpowers should feel genuinely positive and specific to this archetype. Kryptonite must be candid and real — name the actual pain points without softening them, as honest feedback is more useful than vague positivity. Starting points should be immediately actionable. Famous last words should make someone laugh because it's so true.`;
 }
 
 function buildEmailHtml({ name, archetypeName, archetypeCode, tagline }) {

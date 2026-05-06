@@ -97,6 +97,9 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
     if (y + needed > 280) {
       doc.addPage();
       y = 20;
+      // Accent bar on every new page
+      setFill(PRIMARY);
+      doc.rect(0, 0, W, 3, 'F');
     }
   }
 
@@ -132,12 +135,12 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   setColor(PRIMARY);
-  drawText('AutoWorkflows.ai', W / 2, y, { align: 'center' });
+  drawText('CometLab', W / 2, y, { align: 'center' });
   y += 5;
   doc.setFontSize(8);
   setColor(TEXT_MUTED);
   doc.setFont('helvetica', 'normal');
-  drawText('OPERATIONAL ARCHETYPE REPORT', W / 2, y, { align: 'center' });
+  drawText('Archetype Report', W / 2, y, { align: 'center' });
   y += 20;
 
   // Archetype name
@@ -285,14 +288,9 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   });
 
   // ═══════════════════════════════════════════════════
-  // PAGE 2: SUPERPOWERS + KRYPTONITE
+  // SUPERPOWERS + KRYPTONITE (new page only if needed)
   // ═══════════════════════════════════════════════════
-  doc.addPage();
-  y = 20;
-
-  // Top accent bar
-  setFill(PRIMARY);
-  doc.rect(0, 0, W, 3, 'F');
+  checkPageBreak(120);
 
   // ── Superpowers ──
   // Box height has to flex with the number of items so longer responses don't clip.
@@ -438,7 +436,7 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   drawText('Ready to Transform Your Operations?', W / 2, y + 12, { align: 'center' });
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  drawText('Book a free strategy call at autoworkflows.ai', W / 2, y + 22, { align: 'center' });
+  drawText('Visit us at www.cometlab.in', W / 2, y + 22, { align: 'center' });
 
   // ── Footer on every page ──
   const totalPages = doc.internal.getNumberOfPages();
@@ -447,7 +445,7 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
-    drawText(`AutoWorkflows.ai  |  Operational Archetype Report  |  Page ${p} of ${totalPages}`, W / 2, 290, { align: 'center' });
+    drawText(`CometLab  |  Archetype Report  |  Page ${p} of ${totalPages}`, W / 2, 290, { align: 'center' });
   }
 
   return doc;
