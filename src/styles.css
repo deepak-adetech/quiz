@@ -889,9 +889,22 @@ select.form-input option[value=""] {
    RESULTS PAGE
    ═══════════════════════════════════════════════════════════ */
 .results-page {
+  position: relative;
   min-height: 100vh;
-  background: var(--bg);
+  background: var(--canvas-warm);
 }
+.results-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(29, 29, 31, 0.06) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 480px);
+          mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 480px);
+  pointer-events: none;
+  z-index: 0;
+}
+.results-page > * { position: relative; z-index: 1; }
 
 .results-container {
   max-width: var(--max-w);
@@ -2850,8 +2863,7 @@ select.form-input option[value=""] {
    ═══════════════════════════════════════════════════════════ */
 
 .landing-page,
-.library-page,
-.results-page {
+.library-page {
   background: var(--bg);
 }
 
