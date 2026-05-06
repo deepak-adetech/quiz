@@ -30,7 +30,7 @@ const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 const ZEPTO_API_KEY = process.env.ZEPTO_API_KEY || '';
 const ZEPTO_API_URL = process.env.ZEPTO_API_URL || 'https://api.zeptomail.in/v1.1/email';
 const ZEPTO_FROM_EMAIL = process.env.ZEPTO_FROM_EMAIL || 'noreply@targetedge.in';
-const ZEPTO_FROM_NAME = process.env.ZEPTO_FROM_NAME || 'AutoWorkflows.ai';
+const ZEPTO_FROM_NAME = process.env.ZEPTO_FROM_NAME || 'CometLab';
 
 app.use(cors());
 app.use(express.json({ limit: '15mb' }));
@@ -259,7 +259,7 @@ function buildEmailHtml({ name, archetypeName, archetypeCode, tagline }) {
           <!-- Header -->
           <tr>
             <td style="background:linear-gradient(135deg,#2563eb 0%,#7c3aed 100%);padding:32px;text-align:center;">
-              <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.02em;">AutoWorkflows.ai</h1>
+              <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.02em;">CometLab</h1>
               <p style="margin:4px 0 0;color:rgba(255,255,255,0.85);font-size:13px;letter-spacing:0.08em;text-transform:uppercase;">Operational Archetype Report</p>
             </td>
           </tr>
@@ -298,7 +298,7 @@ function buildEmailHtml({ name, archetypeName, archetypeCode, tagline }) {
           <!-- Footer -->
           <tr>
             <td style="background:#f8fafc;padding:24px;text-align:center;font-size:12px;color:#94a3b8;border-top:1px solid #e2e8f0;">
-              &copy; ${new Date().getFullYear()} AutoWorkflows.ai. All rights reserved.<br>
+              &copy; ${new Date().getFullYear()} CometLab. All rights reserved.<br>
               You received this because you took our Operational Archetype quiz.
             </td>
           </tr>

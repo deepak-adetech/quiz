@@ -20,7 +20,7 @@ export default function SiteLogo({ gradId = 'siteLogoGrad' }) {
           />
         </svg>
       </span>
-      <span className="nav-wordmark">AutoWorkFlow<span className="nav-logo-accent">.AI</span></span>
+      <span className="nav-wordmark">CometLab</span>
     </a>
   );
 }
