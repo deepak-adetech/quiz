@@ -132,7 +132,6 @@ export default function ResultsPage() {
 
       <main className="results-container">
         <section className="result-hero">
-          <div className="aurora" aria-hidden />
           <div className="result-hero-inner">
             <div className="archetype-icon" aria-hidden>
               <span className="archetype-icon-emoji">{arch.emoji}</span>

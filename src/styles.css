@@ -918,12 +918,9 @@ select.form-input option[value=""] {
 
 /* ── Hero ── */
 .result-hero {
-  position: relative;
   text-align: center;
   padding: 80px 24px 56px;
-  overflow: hidden;
 }
-.result-hero-inner { position: relative; z-index: 1; }
 
 .archetype-icon {
   display: inline-flex;
