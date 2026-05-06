@@ -7,17 +7,14 @@ import {
   Target,
   Quote,
   ArrowUpRight,
-  ArrowRight,
   Mail,
-  Download,
   Check,
   Link as LinkIcon,
   Linkedin,
   Twitter,
-  Building2,
 } from 'lucide-react';
 import { generateFallback } from '../data/fallback';
-import { downloadPdf, generatePdfBase64 } from '../utils/generatePdf';
+import { generatePdfBase64 } from '../utils/generatePdf';
 import SiteLogo from '../components/SiteLogo';
 
 function loadResults() {
@@ -35,14 +32,7 @@ export default function ResultsPage() {
   const results = useMemo(() => loadResults(), []);
   const barsAnimated = useRef(false);
   const emailSentRef = useRef(false);
-  const [pdfReady, setPdfReady] = useState(false);
   const [emailStatus, setEmailStatus] = useState('idle');
-
-  const handleDownloadPdf = async () => {
-    if (!results) return;
-    await downloadPdf(results);
-    setPdfReady(true);
-  };
 
   useEffect(() => {
     if (!results) navigate('/');
@@ -259,47 +249,36 @@ export default function ResultsPage() {
           </div>
         </section>
 
-        <section className="result-section">
-          <div className="result-card bp-card card-animal">
-            <div className="animal-header">
-              <span className="animal-emoji" aria-hidden>{arch.animalEmoji}</span>
-              <h2 className="card-heading">Why {arch.animal}?</h2>
-            </div>
-            <p className="animal-text">{d.why_animal}</p>
-          </div>
-        </section>
-
-        <section className="result-section">
-          <div className="pdf-download-card">
-            <div className="pdf-icon" aria-hidden><FileText size={28} strokeWidth={1.5} /></div>
-            <div className="eyebrow eyebrow-center">Your full report</div>
-            <h2>Beautifully formatted, ready to share.</h2>
-            <p>A polished PDF with all your results, insights, and action plan.</p>
-
-            {emailStatus === 'sending' && (
+        {emailStatus === 'sending' && (
+          <section className="result-section">
+            <div className="pdf-download-card">
               <div className="email-status status-sending">
                 <span className="status-spinner" />
-                <span>Sending a copy to <strong>{results.user?.email}</strong>...</span>
+                <span>Sending your report to <strong>{results.user?.email}</strong>...</span>
               </div>
-            )}
-            {emailStatus === 'sent' && (
+            </div>
+          </section>
+        )}
+        {emailStatus === 'sent' && (
+          <section className="result-section">
+            <div className="pdf-download-card">
               <div className="email-status status-sent">
                 <Mail size={14} strokeWidth={1.75} />
-                <span>We've sent your PDF report to <strong>{results.user?.email}</strong>. Check your inbox.</span>
+                <span>Your PDF report has been sent to <strong>{results.user?.email}</strong>. Check your inbox.</span>
               </div>
-            )}
-            {emailStatus === 'failed' && (
+            </div>
+          </section>
+        )}
+        {emailStatus === 'failed' && (
+          <section className="result-section">
+            <div className="pdf-download-card">
               <div className="email-status status-failed">
                 <AlertTriangle size={14} strokeWidth={1.75} />
-                <span>Couldn't email your report right now. Use the download button below.</span>
+                <span>Couldn't send your report by email right now. Please contact us at <a href="https://www.cometlab.in">cometlab.in</a>.</span>
               </div>
-            )}
-
-            <button className="btn-grad btn-large" onClick={handleDownloadPdf}>
-              {pdfReady ? <><Check size={16} strokeWidth={2} /> Downloaded</> : <><Download size={16} strokeWidth={1.75} /> Download PDF Report</>}
-            </button>
-          </div>
-        </section>
+            </div>
+          </section>
+        )}
 
         <section className="result-section result-cta">
           <div className="cta-card bp-card">
@@ -311,9 +290,6 @@ export default function ResultsPage() {
                 Book a Strategy Call
                 <ArrowUpRight size={16} strokeWidth={1.75} />
               </a>
-              <button className="btn-ghost btn-large" onClick={handleDownloadPdf}>
-                <Download size={16} strokeWidth={1.75} /> Download Report
-              </button>
             </div>
             <div className="share-section">
               <p className="share-label mono">Share your archetype</p>

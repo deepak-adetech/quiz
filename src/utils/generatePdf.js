@@ -171,32 +171,6 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   });
   y += 8;
 
-  // Prepared for
-  if (user.name) {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    setColor(TEXT_MUTED);
-    drawText('PREPARED FOR', W / 2, y, { align: 'center' });
-    y += 6;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    setColor(TEXT);
-    drawText(user.name, W / 2, y, { align: 'center' });
-    y += 5;
-    if (user.company) {
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      setColor(TEXT_SEC);
-      const roleLine = [user.role, user.company].filter(Boolean).join(' at ');
-      drawText(roleLine, W / 2, y, { align: 'center' });
-      y += 5;
-    }
-    if (user.teamSize) {
-      doc.setFontSize(9);
-      drawText(`Team size: ${user.teamSize}`, W / 2, y, { align: 'center' });
-      y += 5;
-    }
-  }
   y += 10;
 
   // ── Dimension Scores ──
@@ -400,31 +374,6 @@ export async function generatePdf({ code, percentages, archetype: arch, details:
   setColor(TEXT_SEC);
   y = addWrappedText(d.real_world_example, MARGIN, y, CONTENT_W, 4.5);
   y += 12;
-
-  // ── Why This Spirit Animal ──
-  checkPageBreak(45);
-  setFill(AMBER_BG);
-  const animalBoxStart = y;
-  const animalLines = doc.splitTextToSize(pdfSafe(d.why_animal), CONTENT_W - 16);
-  const animalBoxH = 18 + animalLines.length * 4.5;
-  doc.roundedRect(MARGIN, y, CONTENT_W, animalBoxH, 4, 4, 'F');
-  setDraw(BORDER);
-  doc.setLineWidth(0.4);
-  doc.roundedRect(MARGIN, y, CONTENT_W, animalBoxH, 4, 4, 'S');
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  setColor(TEXT);
-  // Spirit-animal emoji intentionally dropped: jsPDF Helvetica can't render astral chars.
-  drawText(`Why ${arch.animal}?`, MARGIN + 8, y + 10);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  setColor(TEXT);
-  animalLines.forEach((line, i) => {
-    doc.text(line, MARGIN + 8, y + 18 + i * 4.5);
-  });
-  y = animalBoxStart + animalBoxH + 15;
 
   // ── CTA Footer ──
   checkPageBreak(35);
