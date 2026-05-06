@@ -133,10 +133,6 @@ export default function ResultsPage() {
       <main className="results-container">
         <section className="result-hero">
           <div className="result-hero-inner">
-            <div className="archetype-icon" aria-hidden>
-              <span className="archetype-icon-emoji">{arch.emoji}</span>
-            </div>
-            <span className="archetype-code">{code}</span>
             <h1 className="archetype-name">{arch.name}</h1>
             <p className="archetype-tagline">{arch.tagline}</p>
           </div>
