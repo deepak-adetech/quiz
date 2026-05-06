@@ -12,6 +12,7 @@ import {
   Link as LinkIcon,
   Linkedin,
   Twitter,
+  Building2,
 } from 'lucide-react';
 import { generateFallback } from '../data/fallback';
 import { generatePdfBase64 } from '../utils/generatePdf';
