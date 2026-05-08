@@ -3586,15 +3586,30 @@ body {
   padding: 32px 24px 80px;
 }
 
-/* Step container */
+/* Step container — same glass card as .quiz-page .q-card */
 .start-step {
+  position: relative;
   width: 100%;
   max-width: 60vw;
   display: flex;
   flex-direction: column;
   gap: 20px;
   animation: startFadeUp 0.35s ease both;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+  padding: 40px 44px;
+  overflow: hidden;
 }
+.start-step::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.06), transparent 25%);
+}
+.start-step > * { position: relative; z-index: 1; }
 
 @keyframes startFadeUp {
   from { opacity: 0; transform: translateY(16px); }
