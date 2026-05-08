@@ -186,7 +186,7 @@ export default function QuizPage() {
   return (
     <div className="quiz-page">
       <nav className="nav">
-        <SiteLogo gradId="logoGradQuiz" />
+        <SiteLogo />
       </nav>
 
       <div className="quiz-container-v2">

@@ -129,7 +129,7 @@ export default function StartPage() {
     return (
       <div className="start-page">
         <nav className="start-nav">
-          <SiteLogo />
+          <SiteLogo variant="light" />
         </nav>
         <div className="start-thankyou">
           <div className="start-thankyou-icon">✓</div>
@@ -149,7 +149,7 @@ export default function StartPage() {
     <div className="start-page">
       {/* Nav */}
       <nav className="start-nav">
-        <SiteLogo />
+        <SiteLogo variant="light" />
       </nav>
 
       {/* Progress */}

@@ -124,7 +124,7 @@ export default function ResultsPage() {
   return (
     <div className="results-page">
       <nav className="nav">
-        <SiteLogo gradId="logoGradRes" />
+        <SiteLogo />
         <div className="nav-links">
           <Link to="/" className="btn-secondary btn-small">Retake Quiz</Link>
         </div>
