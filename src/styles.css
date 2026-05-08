@@ -4125,3 +4125,13 @@ body {
   border-color: rgba(59, 130, 246, 0.20);
   color: #60a5fa;
 }
+
+/* Subtle hint below multi-select steps */
+.q-hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: center;
+  letter-spacing: 0.03em;
+  margin-top: 12px;
+  transition: color 0.3s;
+}

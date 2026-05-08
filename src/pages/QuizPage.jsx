@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { quizSteps, getTotalQuestionCount, getQuestionNumberForStep } from '../data/quizSteps';
@@ -56,33 +56,43 @@ export default function QuizPage() {
   const questionNumber = useMemo(() => getQuestionNumberForStep(stepIndex), [stepIndex]);
   const progress = (questionNumber / TOTAL_QUESTIONS) * 100;
 
-  // Step types that auto-advance when complete (no Next button needed)
-  const AUTO_ADVANCE = new Set(['single-choice', 'choice-described', 'choice-icon-list', 'dual-choice']);
+  // Debounce timer ref for multi-choice (advance 1.4s after last selection)
+  const multiTimer = useRef(null);
 
-  // Advance to next step (or submit) without relying on stale canProceed
-  const advanceAfterAnswer = (newAnswer) => {
+  // Core advance — works off fresh answer value, not stale canProceed
+  const advanceAfterAnswer = (newAnswer, delay = 220) => {
     if (!isStepComplete(currentStep, newAnswer)) return;
     setTimeout(() => {
-      if (isFinalStep) {
-        submitQuiz();
-      } else {
+      if (isFinalStep) submitQuiz();
+      else {
         setStepIndex((i) => i + 1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-    }, 220);
+    }, delay);
   };
 
-  // Single-value answer — auto-advances for supported types
+  // All single-value steps — includes matrix-rating (passes full ratings obj)
   const handleSingleAnswer = (value) => {
     setAnswers((prev) => ({ ...prev, [currentStep.id]: value }));
-    if (AUTO_ADVANCE.has(currentStep.type)) advanceAfterAnswer(value);
+    if (currentStep.type === 'multi-choice') {
+      // Debounced: wait 1.4s after the last toggle before advancing
+      clearTimeout(multiTimer.current);
+      if (isStepComplete(currentStep, value)) {
+        multiTimer.current = setTimeout(() => {
+          setStepIndex((i) => i + 1);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 1400);
+      }
+    } else {
+      advanceAfterAnswer(value);
+    }
   };
 
-  // Nested answer (dual-choice / choice-plus-slider) — auto-advances dual-choice when both done
+  // Nested answer (dual-choice / choice-plus-slider) — auto-advance when both filled
   const handleNestedAnswer = (subKey, value) => {
     const newAnswer = { ...(answers[currentStep.id] || {}), [subKey]: value };
     setAnswers((prev) => ({ ...prev, [currentStep.id]: newAnswer }));
-    if (currentStep.type === 'dual-choice') advanceAfterAnswer(newAnswer);
+    advanceAfterAnswer(newAnswer);
   };
 
   const submitQuiz = async () => {
@@ -238,8 +248,23 @@ export default function QuizPage() {
         {/* ── Quiz Step ── */}
         {phase === 'quiz' && renderStep()}
 
-        {/* ── Next / Submit — only for steps that don't auto-advance ── */}
-        {phase === 'quiz' && !AUTO_ADVANCE.has(currentStep?.type) && (
+        {/* ── Subtle hints for multi-select steps ── */}
+        {phase === 'quiz' && currentStep?.type === 'multi-choice' && (
+          <p className="q-hint">
+            {canProceed
+              ? 'Good — select more if needed, we\'ll continue shortly…'
+              : 'Select all that apply to move on'}
+          </p>
+        )}
+        {phase === 'quiz' && currentStep?.type === 'matrix-rating' && !canProceed && (
+          <p className="q-hint">Rate each dimension above to continue</p>
+        )}
+        {phase === 'quiz' && currentStep?.type === 'choice-plus-slider' && !canProceed && (
+          <p className="q-hint">Choose an option and set the slider to continue</p>
+        )}
+
+        {/* ── Submit button — contact form only ── */}
+        {phase === 'quiz' && isFinalStep && (
           <div className="q-nav">
             <button
               type="button"
@@ -247,7 +272,7 @@ export default function QuizPage() {
               onClick={goNext}
               disabled={!canProceed}
             >
-              {isFinalStep ? 'Get My Report' : 'Next'}
+              Get My Report
               <ArrowRight size={15} strokeWidth={1.75} />
             </button>
           </div>
