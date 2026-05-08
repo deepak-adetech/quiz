@@ -1591,7 +1591,7 @@ select.form-input option[value=""] {
 .quiz-page > * { position: relative; z-index: 1; }
 
 .quiz-container-v2 {
-  max-width: 60vw;
+  width: 60%;
   margin: 0 auto;
   padding: 12px 24px 24px;
 }
