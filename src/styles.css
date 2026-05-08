@@ -3886,6 +3886,9 @@ body {
   .start-content { padding: 28px 20px 60px; }
   .start-options-grid { grid-template-columns: 1fr; }
   .start-option.selected::after { display: none; }
+}
+
+@media (max-width: 720px) {
   .start-progress-card { max-width: 90vw; }
   .start-step { max-width: 90vw; padding: 28px 22px; }
 }
