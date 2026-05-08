@@ -1591,7 +1591,7 @@ select.form-input option[value=""] {
 .quiz-page > * { position: relative; z-index: 1; }
 
 .quiz-container-v2 {
-  max-width: 600px;
+  max-width: 720px;
   margin: 0 auto;
   padding: 12px 24px 24px;
 }
@@ -3567,7 +3567,7 @@ body {
 /* Progress card — same dark glass as quiz, constrained to step width */
 .start-progress-card {
   width: 100%;
-  max-width: 600px;
+  max-width: 720px;
   margin-bottom: 20px;
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.09);
@@ -3589,7 +3589,7 @@ body {
 /* Step container */
 .start-step {
   width: 100%;
-  max-width: 600px;
+  max-width: 720px;
   display: flex;
   flex-direction: column;
   gap: 20px;
