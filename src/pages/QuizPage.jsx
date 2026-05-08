@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { quizSteps, getTotalQuestionCount, getQuestionNumberForStep } from '../data/quizSteps';
 import { calculateArchetype } from '../data/scoring';
 import SiteLogo from '../components/SiteLogo';
+import StarField from '../components/StarField';
 import SingleChoiceStep from '../components/quiz/SingleChoiceStep';
 import DualChoiceStep from '../components/quiz/DualChoiceStep';
 import MultiChoiceStep from '../components/quiz/MultiChoiceStep';
@@ -185,8 +186,9 @@ export default function QuizPage() {
 
   return (
     <div className="quiz-page">
+      <StarField />
       <nav className="nav">
-        <SiteLogo />
+        <SiteLogo variant="light" />
       </nav>
 
       <div className="quiz-container-v2">

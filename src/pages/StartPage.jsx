@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import SiteLogo from '../components/SiteLogo';
+import StarField from '../components/StarField';
 
 // ── Step data ──────────────────────────────────────────────────────────────────
 
@@ -128,6 +129,7 @@ export default function StartPage() {
   if (submitted) {
     return (
       <div className="start-page">
+        <StarField />
         <nav className="start-nav">
           <SiteLogo variant="light" />
         </nav>
@@ -147,6 +149,7 @@ export default function StartPage() {
 
   return (
     <div className="start-page">
+      <StarField />
       {/* Nav */}
       <nav className="start-nav">
         <SiteLogo variant="light" />
