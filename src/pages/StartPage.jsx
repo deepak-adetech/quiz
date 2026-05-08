@@ -155,16 +155,21 @@ export default function StartPage() {
         <SiteLogo variant="light" />
       </nav>
 
-      {/* Progress */}
-      <div className="start-progress-bar">
-        <div className="start-progress-fill" style={{ width: `${progress}%` }} />
-      </div>
-
-      {/* Step counter */}
-      <div className="start-step-counter">{step} of {TOTAL_STEPS}</div>
-
       {/* Step content */}
       <div className="start-content">
+
+        {/* ── Progress card (same style as quiz) ── */}
+        <div className="q-progress-card start-progress-card">
+          <div className="q-progress-row">
+            <span className="q-progress-label">
+              Step {String(step).padStart(2, '0')} / {String(TOTAL_STEPS).padStart(2, '0')}
+            </span>
+            <span className="q-progress-pct">{Math.round(progress)}%</span>
+          </div>
+          <div className="q-progress-bar">
+            <div className="q-progress-bar-fill" style={{ width: `${progress}%` }} />
+          </div>
+        </div>
 
         {/* ── Step 1: Situation ───────────────────────────────────────── */}
         {step === 1 && (
