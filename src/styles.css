@@ -97,7 +97,7 @@ a:hover {
   gap: 32px;
   padding: 20px 32px;
   width: 100%;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 20px;
 }
 
 .nav-logo {
@@ -3561,7 +3561,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px 32px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 20px;
 }
 
 /* Progress card — same dark glass as quiz, constrained to step width */
