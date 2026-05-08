@@ -3552,7 +3552,7 @@ body {
 .start-progress-card {
   width: 100%;
   max-width: 560px;
-  margin-bottom: 4px;
+  margin-bottom: 20px;
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.09);
   box-shadow: none;
