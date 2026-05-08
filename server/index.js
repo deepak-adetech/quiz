@@ -15,6 +15,7 @@ import { fileURLToPath } from 'url';
 import leadsRouter from './leads.js';
 import startRouter from './start.js';
 import { createLead, markEmailSent } from './db.js';
+import { syncLeadToCRM } from './crm.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -65,6 +66,29 @@ app.post('/api/generate-results', async (req, res) => {
   } catch (err) {
     console.error('Failed to save lead:', err.message);
   }
+
+  // ── Sync to Twenty CRM (fire-and-forget, don't block response) ──
+  const contact = answers?.contactForm || {};
+  const firstName = contact.firstName || '';
+  const lastName  = contact.lastName  || '';
+  syncLeadToCRM({
+    first_name:       firstName,
+    last_name:        lastName,
+    email:            contact.email   || '',
+    phone:            contact.phone   || '',
+    company:          contact.company || '',
+    website:          contact.website || '',
+    role:             contact.role    || '',
+    opportunity_name: `Quiz — ${result.archetype?.name || result.code}`,
+    note_title:       'Quiz Archetype Result',
+    note_body:        [
+      `Archetype: ${result.archetype?.name || result.code}`,
+      `Name: ${[firstName, lastName].filter(Boolean).join(' ') || '—'}`,
+      `Email: ${contact.email || '—'}`,
+      `Company: ${contact.company || '—'}`,
+      `Expert Call: ${contact.expertCall ? 'Yes' : 'No'}`,
+    ].join('\n'),
+  }).catch(err => console.error('[CRM] Quiz sync error:', err.message));
 
   const { code, scores, percentages, archetype } = result;
 
