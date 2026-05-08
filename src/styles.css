@@ -2352,7 +2352,7 @@ select.form-input option[value=""] {
 
 /* ── Responsive ── */
 @media (max-width: 720px) {
-  .quiz-container-v2 { padding: 12px 16px 60px; }
+  .quiz-container-v2 { width: 90%; padding: 12px 16px 60px; }
   .q-card { padding: 28px 22px; }
   .q-title { font-size: 1.5rem; }
   .q-grid-2 { grid-template-columns: 1fr; }
@@ -3886,6 +3886,8 @@ body {
   .start-content { padding: 28px 20px 60px; }
   .start-options-grid { grid-template-columns: 1fr; }
   .start-option.selected::after { display: none; }
+  .start-progress-card { max-width: 90vw; }
+  .start-step { max-width: 90vw; padding: 28px 22px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
