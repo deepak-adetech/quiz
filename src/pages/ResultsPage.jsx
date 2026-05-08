@@ -36,7 +36,7 @@ export default function ResultsPage() {
   const [emailStatus, setEmailStatus] = useState('idle');
 
   useEffect(() => {
-    if (!results) navigate('/');
+    if (!results) navigate('/quiz');
   }, [results, navigate]);
 
   useEffect(() => {

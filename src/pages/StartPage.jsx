@@ -137,7 +137,7 @@ export default function StartPage() {
           <div className="start-thankyou-icon">✓</div>
           <h1>You're all set.</h1>
           <p>We've received your details and will be in touch within one business day.</p>
-          <p className="start-thankyou-sub">In the meantime, feel free to take our <a href="/">Operational Archetype Quiz</a> to understand where your business stands today.</p>
+          <p className="start-thankyou-sub">In the meantime, feel free to take our <a href="/quiz">Operational Archetype Quiz</a> to understand where your business stands today.</p>
         </div>
       </div>
     );
