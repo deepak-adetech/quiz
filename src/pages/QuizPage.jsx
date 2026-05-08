@@ -56,17 +56,33 @@ export default function QuizPage() {
   const questionNumber = useMemo(() => getQuestionNumberForStep(stepIndex), [stepIndex]);
   const progress = (questionNumber / TOTAL_QUESTIONS) * 100;
 
-  // Update a single-value answer
-  const handleSingleAnswer = (value) => {
-    setAnswers((prev) => ({ ...prev, [currentStep.id]: value }));
+  // Step types that auto-advance when complete (no Next button needed)
+  const AUTO_ADVANCE = new Set(['single-choice', 'choice-described', 'choice-icon-list', 'dual-choice']);
+
+  // Advance to next step (or submit) without relying on stale canProceed
+  const advanceAfterAnswer = (newAnswer) => {
+    if (!isStepComplete(currentStep, newAnswer)) return;
+    setTimeout(() => {
+      if (isFinalStep) {
+        submitQuiz();
+      } else {
+        setStepIndex((i) => i + 1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 220);
   };
 
-  // Update a nested answer (for dual-choice / choice-plus-slider)
+  // Single-value answer — auto-advances for supported types
+  const handleSingleAnswer = (value) => {
+    setAnswers((prev) => ({ ...prev, [currentStep.id]: value }));
+    if (AUTO_ADVANCE.has(currentStep.type)) advanceAfterAnswer(value);
+  };
+
+  // Nested answer (dual-choice / choice-plus-slider) — auto-advances dual-choice when both done
   const handleNestedAnswer = (subKey, value) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [currentStep.id]: { ...(prev[currentStep.id] || {}), [subKey]: value },
-    }));
+    const newAnswer = { ...(answers[currentStep.id] || {}), [subKey]: value };
+    setAnswers((prev) => ({ ...prev, [currentStep.id]: newAnswer }));
+    if (currentStep.type === 'dual-choice') advanceAfterAnswer(newAnswer);
   };
 
   const submitQuiz = async () => {
@@ -207,21 +223,24 @@ export default function QuizPage() {
           </div>
         )}
 
+        {/* ── Back button — sits just below progress bar ── */}
+        {phase === 'quiz' && stepIndex > 0 && (
+          <button
+            type="button"
+            className="q-back-top"
+            onClick={goBack}
+          >
+            <ArrowLeft size={14} strokeWidth={1.75} />
+            Back
+          </button>
+        )}
+
         {/* ── Quiz Step ── */}
         {phase === 'quiz' && renderStep()}
 
-        {/* ── Nav Buttons ── */}
-        {phase === 'quiz' && (
+        {/* ── Next / Submit — only for steps that don't auto-advance ── */}
+        {phase === 'quiz' && !AUTO_ADVANCE.has(currentStep?.type) && (
           <div className="q-nav">
-            <button
-              type="button"
-              className="q-nav-btn q-nav-back"
-              onClick={goBack}
-              disabled={stepIndex === 0}
-            >
-              <ArrowLeft size={15} strokeWidth={1.75} />
-              Back
-            </button>
             <button
               type="button"
               className="q-nav-btn q-nav-next"

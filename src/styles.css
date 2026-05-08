@@ -2233,7 +2233,7 @@ select.form-input option[value=""] {
   bottom: 0;
   z-index: 10;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   gap: 16px;
   margin-top: 28px;
@@ -2242,6 +2242,22 @@ select.form-input option[value=""] {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
+
+/* Back button — above the card, just below progress bar */
+.q-back-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 13px;
+  font-family: var(--font);
+  cursor: pointer;
+  padding: 0 0 12px;
+  transition: color 0.2s;
+}
+.q-back-top:hover { color: rgba(255, 255, 255, 0.80); }
 .q-nav-btn {
   display: inline-flex;
   align-items: center;
