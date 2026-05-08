@@ -13,6 +13,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import leadsRouter from './leads.js';
+import startRouter from './start.js';
 import { createLead, markEmailSent } from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -37,6 +38,9 @@ app.use(express.json({ limit: '15mb' }));
 
 // ── Lead management CRUD routes ──
 app.use('/api', leadsRouter);
+
+// ── Start form route ──
+app.use('/api', startRouter);
 
 // ═══════════════════════════════════════════════════
 // POST /api/generate-results
