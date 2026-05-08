@@ -15,7 +15,7 @@ import { fileURLToPath } from 'url';
 import leadsRouter from './leads.js';
 import startRouter from './start.js';
 import { createLead, markEmailSent } from './db.js';
-import { syncLeadToCRM } from './crm.js';
+import { syncLeadToCRM, syncNewsletterToCRM } from './crm.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -209,6 +209,35 @@ app.post('/api/send-email', async (req, res) => {
   } catch (err) {
     console.error('Email send failed:', err.message);
     return res.status(500).json({ sent: false, error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// POST /api/ghost-newsletter-webhook
+// Called by Ghost when a new member subscribes
+// ═══════════════════════════════════════════════════
+app.post('/api/ghost-newsletter-webhook', async (req, res) => {
+  try {
+    const body = req.body || {};
+    // Ghost sends: { member: { current: { name, email, ... } } }
+    const member = body.member?.current || body.member || {};
+    const email = member.email || '';
+    const name  = member.name  || email;
+
+    if (!email) {
+      console.warn('[Ghost Webhook] No email in payload:', JSON.stringify(body).slice(0, 200));
+      return res.json({ ok: false, reason: 'no_email' });
+    }
+
+    console.log(`[Ghost Webhook] New subscriber: ${name} <${email}>`);
+    syncNewsletterToCRM(name, email).catch(err =>
+      console.error('[Ghost Webhook] CRM sync error:', err.message)
+    );
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[Ghost Webhook] Handler error:', err.message);
+    return res.status(500).json({ ok: false });
   }
 });
 

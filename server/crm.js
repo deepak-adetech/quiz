@@ -138,6 +138,33 @@ async function createOpportunity(lead, companyId, personId) {
   return null;
 }
 
+export async function syncNewsletterToCRM(name, email) {
+  if (!TWENTY_API_KEY) {
+    console.warn('[CRM] TWENTY_API_KEY not set — skipping newsletter sync');
+    return null;
+  }
+  try {
+    const data = await gql(`
+      mutation CreateNewsletter($data: NewsletterCreateInput!) {
+        createNewsletter(data: $data) { id name }
+      }
+    `, {
+      data: {
+        name: name || email,
+        email: { primaryEmail: email },
+      },
+    });
+    const created = data?.createNewsletter;
+    if (created) {
+      console.log(`[CRM] Newsletter subscriber added: ${email} (${created.id})`);
+    }
+    return created?.id || null;
+  } catch (err) {
+    console.error('[CRM] Newsletter sync failed:', err.message);
+    return null;
+  }
+}
+
 export async function syncLeadToCRM(lead) {
   if (!TWENTY_API_KEY) {
     console.warn('[CRM] TWENTY_API_KEY not set — skipping CRM sync');
