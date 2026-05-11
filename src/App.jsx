@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import QuizPage from './pages/QuizPage';
 import ResultsPage from './pages/ResultsPage';
 import StartPage from './pages/StartPage';
@@ -8,8 +8,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/quiz" replace />} />
-        <Route path="/quiz" element={<QuizPage />} />
+        <Route path="/" element={<QuizPage />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/start" element={<StartPage />} />
         <Route path="/admin/leads" element={<LeadsPage />} />
