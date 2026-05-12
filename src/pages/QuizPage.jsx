@@ -13,11 +13,13 @@ import ChoiceDescribedStep from '../components/quiz/ChoiceDescribedStep';
 import MatrixRatingStep from '../components/quiz/MatrixRatingStep';
 import ChoiceIconListStep from '../components/quiz/ChoiceIconListStep';
 import ContactFormStep from '../components/quiz/ContactFormStep';
+import CalendarBookingStep from '../components/quiz/CalendarBookingStep';
 
 const TOTAL_STEPS = quizSteps.length;
 const TOTAL_QUESTIONS = getTotalQuestionCount();
 
 function isStepComplete(step, answer) {
+  if (step.type === 'calendar-booking') return true;
   if (!answer) return false;
   switch (step.type) {
     case 'single-choice':
@@ -95,8 +97,8 @@ export default function QuizPage() {
     advanceAfterAnswer(newAnswer);
   };
 
-  const submitQuiz = async () => {
-    setPhase('loading');
+  const submitQuiz = async ({ silent = false } = {}) => {
+    if (!silent) setPhase('loading');
     const result = calculateArchetype(answers);
     const contact = answers.contactForm || {};
     const user = {
@@ -141,13 +143,25 @@ export default function QuizPage() {
       }));
     }
 
-    setTimeout(() => navigate('/results'), 2500);
+    if (!silent) setTimeout(() => navigate('/results'), 2500);
   };
+
+  // When the calendar step is reached, silently compute + store results
+  useEffect(() => {
+    if (isFinalStep && currentStep?.type === 'calendar-booking') {
+      submitQuiz({ silent: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFinalStep, currentStep?.type]);
 
   const goNext = () => {
     if (!canProceed) return;
     if (isFinalStep) {
-      submitQuiz();
+      if (currentStep?.type === 'calendar-booking') {
+        navigate('/results');
+      } else {
+        submitQuiz();
+      }
     } else {
       setStepIndex((i) => i + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -205,6 +219,8 @@ export default function QuizPage() {
         return <ChoiceIconListStep step={currentStep} value={currentAnswer} onChange={handleSingleAnswer} />;
       case 'contact-form':
         return <ContactFormStep step={currentStep} value={currentAnswer || {}} onChange={handleSingleAnswer} />;
+      case 'calendar-booking':
+        return <CalendarBookingStep step={currentStep} onSkip={() => navigate('/results')} />;
       default:
         return null;
     }
@@ -263,8 +279,8 @@ export default function QuizPage() {
           <p className="q-hint">Choose an option and set the slider to continue</p>
         )}
 
-        {/* ── Submit button — contact form only ── */}
-        {phase === 'quiz' && isFinalStep && (
+        {/* ── Submit button — contact form only (not shown for calendar-booking) ── */}
+        {phase === 'quiz' && isFinalStep && currentStep?.type !== 'calendar-booking' && (
           <div className="q-nav">
             <button
               type="button"

@@ -4167,3 +4167,32 @@ body {
   margin-top: 12px;
   transition: color 0.3s;
 }
+
+/* ── Calendar booking step ─────────────────────────────────────────── */
+.q-calendar-embed {
+  margin-top: 24px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.q-calendar-skip {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.q-skip-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.q-skip-link:hover {
+  color: rgba(255, 255, 255, 0.85);
+}

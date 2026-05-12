@@ -255,26 +255,12 @@ export const quizSteps = [
     ],
   },
 
-  // ─── STEP 9: Lead capture form ────────────────────
+  // ─── STEP 9: Book a call ─────────────────────────
   {
-    id: 'contactForm',
-    type: 'contact-form',
-    title: 'Almost done! Where should we send your Operational Archetype Report?',
-    subtitle: "We'll email you a detailed PDF with your archetype, strengths, blind spots, and a tailored action plan.",
-    fields: [
-      { id: 'firstName', label: 'First Name',       type: 'text',  placeholder: 'John',                required: true,  half: true },
-      { id: 'lastName',  label: 'Last Name',        type: 'text',  placeholder: 'Smith',               required: true,  half: true },
-      { id: 'email',     label: 'Email',            type: 'email', placeholder: 'john@company.com',    required: true },
-      { id: 'company',   label: 'Company Name',     type: 'text',  placeholder: 'Acme Inc.',           required: true },
-      { id: 'role',      label: 'Job Title',        type: 'text',  placeholder: 'e.g., VP Operations', required: false },
-      { id: 'website',   label: 'Company Website',  type: 'url',   placeholder: 'https://',            required: false },
-      { id: 'phone',     label: 'Phone',            type: 'tel',   placeholder: '+1 (555) 000-0000',   required: false },
-    ],
-    consentCheckbox: {
-      id: 'expertCall',
-      label: "I'd like to discuss these findings with an AutoWorkFlow.AI expert",
-      defaultChecked: true,
-    },
+    id: 'bookCall',
+    type: 'calendar-booking',
+    title: "One last step — book a 30-minute call with our founders",
+    subtitle: "They'll walk you through your Operational Archetype results and exactly how Comet Lab can help.",
   },
 ];
 
