@@ -241,6 +241,84 @@ app.post('/api/ghost-newsletter-webhook', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════
+// POST /api/cal-webhook
+// Called by Cal.com (cal.cometlab.in) when a booking is created.
+// Register this URL in Cal.com → Settings → Developer → Webhooks.
+// ═══════════════════════════════════════════════════
+app.post('/api/cal-webhook', async (req, res) => {
+  try {
+    const body = req.body || {};
+    const triggerEvent = body.triggerEvent || body.trigger_event || '';
+
+    // Only act on new bookings
+    if (triggerEvent && !triggerEvent.includes('BOOKING_CREATED')) {
+      return res.json({ ok: true, skipped: triggerEvent });
+    }
+
+    const payload = body.payload || body;
+
+    // Attendees array — always present in Cal.com payloads
+    const attendees = payload.attendees || [];
+    // The first attendee is the booker (index 0 is usually the organiser, 1 is guest — but
+    // on single-person bookings attendees[0] is the guest)
+    const booker = attendees.find(a => a.email !== payload.organizer?.email) || attendees[0] || {};
+
+    // Booking field responses (Cal.com v1 shape)
+    const responses = payload.responses || {};
+    const userFields = payload.userFieldsResponses || {};
+
+    const name  = booker.name  || responses.name?.value  || '';
+    const email = booker.email || responses.email?.value || '';
+
+    if (!email) {
+      console.warn('[Cal Webhook] No email in payload:', JSON.stringify(body).slice(0, 300));
+      return res.json({ ok: false, reason: 'no_email' });
+    }
+
+    const company = userFields.company?.value || responses.company?.value || '';
+    const phone   = userFields.phone?.value   || responses.phone?.value   || '';
+    const notes   = userFields.notes?.value   || responses.notes?.value   || payload.additionalNotes || '';
+
+    const nameParts = (name || '').trim().split(/\s+/);
+    const firstName = nameParts[0] || '';
+    const lastName  = nameParts.slice(1).join(' ');
+
+    const startTime = payload.startTime || '';
+    const noteBody = [
+      `**Type:** Cal.com Booking`,
+      startTime ? `**Scheduled:** ${new Date(startTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}` : '',
+      `**Name:** ${name || '—'}`,
+      `**Email:** ${email}`,
+      company ? `**Company:** ${company}` : '',
+      phone   ? `**Phone:** ${phone}` : '',
+      notes   ? `**Notes:** ${notes}` : '',
+    ].filter(Boolean).join('\n\n');
+
+    console.log(`[Cal Webhook] Booking from ${name} <${email}>${company ? ` (${company})` : ''}`);
+
+    const lead = {
+      first_name:       firstName,
+      last_name:        lastName,
+      email,
+      company:          company || '',
+      phone:            phone   || '',
+      opportunity_name: 'Booked a Call',
+      note_title:       'Cal.com Booking',
+      note_body:        noteBody,
+    };
+
+    syncLeadToCRM(lead).catch(err =>
+      console.error('[Cal Webhook] CRM sync error:', err.message)
+    );
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[Cal Webhook] Handler error:', err.message);
+    return res.status(500).json({ ok: false });
+  }
+});
+
 // ── Health check ────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({
